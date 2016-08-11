@@ -139,6 +139,23 @@ impl<K, V> Tree<K, V>
             let (root, _) = Tree::splay_by(root, |_| Ordering::Greater);
             let (e, root) = root.pop();
             self.root = root;
+            self.len -= 1;
+            Some(e)
+        })
+    }
+    pub fn get_lftmost(&mut self) -> Option<(&K, &V)> {
+        self.root.take().and_then(move |root| {
+            let (root, _) = Tree::splay_by(root, |_| Ordering::Less);
+            self.root = Some(root);
+            self.root.as_ref().map(|n| (&n.key, &n.val))
+        })
+    }
+    pub fn take_lftmost(&mut self) -> Option<(K, V)> {
+        self.root.take().and_then(move |root| {
+            let (root, _) = Tree::splay_by(root, |_| Ordering::Less);
+            let (e, root) = root.pop();
+            self.root = root;
+            self.len -= 1;
             Some(e)
         })
     }
@@ -253,6 +270,9 @@ impl<K, V> Tree<K, V> {
     pub fn iter(&self) -> Iter<K, V> {
         Iter::new(self)
     }
+    // pub fn keys(&self) -> Keys<K, V> {
+    //     Keys::new(self)
+    // }
 }
 
 // XXX: name
@@ -264,7 +284,7 @@ pub struct Iter<'a, K: 'a, V: 'a> {
     stack: Vec<Item<&'a Node<K, V>>>,
 }
 impl<'a, K: 'a, V: 'a> Iter<'a, K, V> {
-    fn new(tree: &'a Tree<K, V>) -> Self {
+    pub fn new(tree: &'a Tree<K, V>) -> Self {
         if let Some(root) = tree.root.as_ref() {
             Iter { stack: vec![Item::Left(root)] }
         } else {
@@ -294,3 +314,54 @@ impl<'a, K: 'a, V: 'a> Iterator for Iter<'a, K, V> {
         None
     }
 }
+
+
+// pub struct RevIter<'a, K: 'a, V: 'a> {
+//     stack: Vec<Item<&'a Node<K, V>>>,
+// }
+// impl<'a, K: 'a, V: 'a> RevIter<'a, K, V> {
+//     pub fn new(tree: &'a Tree<K, V>) -> Self {
+//         if let Some(root) = tree.root.as_ref() {
+//             RevIter { stack: vec![Item::Right(root)] }
+//         } else {
+//             RevIter { stack: vec![] }
+//         }
+//     }
+// }
+// impl<'a, K: 'a, V: 'a> Iterator for RevIter<'a, K, V> {
+//     type Item = (&'a K, &'a V);
+//     fn next(&mut self) -> Option<Self::Item> {
+//         while let Some(e) = self.stack.pop() {
+//             match e {
+//                 Item::Right(e) => {
+//                     self.stack.push(Item::Left(e));
+//                     if let Some(child) = e.rgt.as_ref() {
+//                         self.stack.push(Item::Right(child));
+//                     }
+//                 }
+//                 Item::Left(e) => {
+//                     if let Some(child) = e.lft.as_ref() {
+//                         self.stack.push(Item::Right(child));
+//                     }
+//                     return Some((&e.key, &e.val));
+//                 }
+//             }
+//         }
+//         None
+//     }
+// }
+
+// pub struct Keys<'a, K: 'a, V: 'a> {
+//     iter: Iter<'a, K, V>,
+// }
+// impl<'a, K: 'a, V: 'a> Keys<'a, K, V> {
+//     fn new(tree: &'a Tree<K, V>) -> Self {
+//         Keys { iter: Iter::new(tree) }
+//     }
+// }
+// impl<'a, K: 'a, V: 'a> Iterator for Keys<'a, K, V> {
+//     type Item = &'a K;
+//     fn next(&mut self) -> Option<Self::Item> {
+//         self.iter.next().map(|e| e.0)
+//     }
+// }

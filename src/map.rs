@@ -1,9 +1,27 @@
+//! A map based on a B-Tree.
 use std::mem;
 use std::borrow::Borrow;
 use core;
 
 pub use core::Iter;
 
+/// A map based on a B-Tree.
+///
+/// TODO
+///
+/// It is a logic error for a key to be modified in such a way that
+/// the key's ordering relative to any other key,
+/// as determined by the `Ord` trait, changes while it is in the map.
+/// This is normally only possible through `Cell`, `RefCell`, global state, I/O, or unsafe code.
+///
+/// # Examples
+///
+/// TODO
+///
+/// `SplayMap` implements an [Entry API](#method.entry) which allows for
+/// more complex methods of getting, setting, updating and removing keys and their values:
+///
+/// TODO
 #[derive(Debug, Clone)]
 pub struct SplayMap<K, V> {
     tree: core::Tree<K, V>,
@@ -11,6 +29,10 @@ pub struct SplayMap<K, V> {
 impl<K, V> SplayMap<K, V>
     where K: Ord
 {
+    /// Makes a new empty `SplayMap`.
+    ///
+    /// # Examples
+    ///
     pub fn new() -> Self {
         SplayMap { tree: core::Tree::new() }
     }

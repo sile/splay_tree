@@ -1,7 +1,4 @@
 //! A priority queue implemented with a splay tree.
-//!
-//! `SplayHeap` is a self-adjusting heap data structure.
-//! It performs pushing and popping in `O(log n)` amortized time.
 use std::iter;
 use std::cmp;
 use core;
@@ -51,7 +48,15 @@ impl<T> Ord for Item<T>
 ///
 /// This will be a max-heap.
 ///
-/// ### Examples
+/// A splay tree based heap is a self-adjusting data structure.
+/// It performs pushing and popping in `O(log n)` amortized time.
+///
+/// It is a logic error for a key to be modified in such a way that
+/// the key's ordering relative to any other key,
+/// as determined by the `Ord` trait, changes while it is in the map.
+/// This is normally only possible through `Cell`, `RefCell`, global state, I/O, or unsafe code.
+///
+/// # Examples
 /// ```
 /// use splay_tree::SplayHeap;
 ///
@@ -76,7 +81,7 @@ impl<T> SplayHeap<T>
 {
     /// Creates an empty `SplayHeap` as a max-heap.
     ///
-    /// ### Examples
+    /// # Examples
     /// ```
     /// use splay_tree::SplayHeap;
     /// let mut heap = SplayHeap::new();
@@ -90,11 +95,11 @@ impl<T> SplayHeap<T>
 
     /// Returns the greatest item in the heap, or `None` if it is empty.
     ///
-    /// ### NOTICE
+    /// # NOTICE
     /// Because `SplayHeap` is a self-adjusting amortized data structure,
     /// this function requires the `mut` qualifier.
     ///
-    /// ### Examples
+    /// # Examples
     /// ```
     /// use splay_tree::SplayHeap;
     /// let mut heap = SplayHeap::new();
@@ -111,7 +116,7 @@ impl<T> SplayHeap<T>
 
     /// Removes the greatest item from the heap and returns it, or `None` if it is empty.
     ///
-    /// ### Examples
+    /// # Examples
     /// ```
     /// use splay_tree::SplayHeap;
     /// let mut heap: SplayHeap<_> = vec![1, 3].into_iter().collect();
@@ -126,7 +131,7 @@ impl<T> SplayHeap<T>
 
     /// Pushes an item onto the heap.
     ///
-    /// ### Examples
+    /// # Examples
     /// ```
     /// use splay_tree::SplayHeap;
     /// let mut heap = SplayHeap::new();
@@ -143,7 +148,7 @@ impl<T> SplayHeap<T>
 
     /// Drops all items from the heap.
     ///
-    /// ### Examples
+    /// # Examples
     /// ```
     /// use splay_tree::SplayHeap;
     /// let mut heap: SplayHeap<_> = vec![1, 3].into_iter().collect();
@@ -159,7 +164,7 @@ impl<T> SplayHeap<T>
 impl<T> SplayHeap<T> {
     /// Returns an iterator visiting all items in sorted (ascending) order.
     ///
-    /// ### Examples
+    /// # Examples
     /// ```
     /// use splay_tree::SplayHeap;
     /// let heap: SplayHeap<_> = vec![1, 4, 2, 3].into_iter().collect();
@@ -175,7 +180,7 @@ impl<T> SplayHeap<T> {
 
     /// Returns the length of the heap.
     ///
-    /// ### Examples
+    /// # Examples
     /// ```
     /// use splay_tree::SplayHeap;
     /// let heap: SplayHeap<_> = vec![1, 3].into_iter().collect();
@@ -188,7 +193,7 @@ impl<T> SplayHeap<T> {
 
     /// Checkes if the heap is empty.
     ///
-    /// ### Examples
+    /// # Examples
     /// ```
     /// use splay_tree::SplayHeap;
     /// let mut heap = SplayHeap::new();

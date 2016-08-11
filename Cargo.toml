@@ -3,4 +3,5 @@ name = "splay_tree"
 version = "0.1.0"
 authors = ["Takeru Ohta <phjgt308@gmail.com>"]
 
-[dependencies]
+[dev-dependencies]
+rand = "0.3"

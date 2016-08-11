@@ -32,10 +32,28 @@ impl<K, V> SplayMap<K, V>
     /// Makes a new empty `SplayMap`.
     ///
     /// # Examples
+    /// ```
+    /// use splay_tree::SplayMap;
     ///
+    /// let mut map = SplayMap::new();
+    /// map.insert("foo", 1);
+    /// assert_eq!(map.len(), 1);
+    /// ```
     pub fn new() -> Self {
         SplayMap { tree: core::Tree::new() }
     }
+
+    /// Clears the map, removing all values.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplayMap;
+    ///
+    /// let mut map = SplayMap::new();
+    /// map.insert("foo", 1);
+    /// map.clear();
+    /// assert!(map.is_empty());
+    /// ```
     pub fn clear(&mut self) {
         self.tree = core::Tree::new();
     }

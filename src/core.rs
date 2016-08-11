@@ -42,6 +42,21 @@ impl<K, V> Node<K, V> {
             }
         }
     }
+    fn pop(mut self) -> ((K, V), MaybeNode<K, V>) {
+        let root = match (self.lft.take(), self.rgt.take()) {
+            (None, None) => None,
+            (Some(lft), None) => Some(lft),
+            (None, Some(rgt)) => Some(rgt),
+            (Some(mut lft), Some(mut rgt)) => {
+                if let Some(lft_rgt) = lft.rgt.take() {
+                    rgt.lftmost_mut().lft = Some(lft_rgt);
+                }
+                lft.rgt = Some(rgt);
+                Some(lft)
+            }
+        };
+        ((self.key, self.val), root)
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -112,6 +127,21 @@ impl<K, V> Tree<K, V>
             }
         })
     }
+    pub fn get_rgtmost(&mut self) -> Option<(&K, &V)> {
+        self.root.take().and_then(move |root| {
+            let (root, _) = Tree::splay_by(root, |_| Ordering::Greater);
+            self.root = Some(root);
+            self.root.as_ref().map(|n| (&n.key, &n.val))
+        })
+    }
+    pub fn take_rgtmost(&mut self) -> Option<(K, V)> {
+        self.root.take().and_then(move |root| {
+            let (root, _) = Tree::splay_by(root, |_| Ordering::Greater);
+            let (e, root) = root.pop();
+            self.root = root;
+            Some(e)
+        })
+    }
     pub fn get<Q: ?Sized>(&mut self, key: &Q) -> Option<&mut V>
         where K: Borrow<Q>,
               Q: Ord
@@ -131,35 +161,24 @@ impl<K, V> Tree<K, V>
               Q: Ord
     {
         self.root.take().and_then(|root| {
-            let (mut root, order) = Tree::splay(key, root);
+            let (root, order) = Tree::splay(key, root);
             if let Ordering::Equal = order {
-                self.root = match (root.lft.take(), root.rgt.take()) {
-                    (None, None) => None,
-                    (Some(lft), None) => Some(lft),
-                    (None, Some(rgt)) => Some(rgt),
-                    (Some(mut lft), Some(mut rgt)) => {
-                        if let Some(lft_rgt) = lft.rgt.take() {
-                            rgt.lftmost_mut().lft = Some(lft_rgt);
-                        }
-                        lft.rgt = Some(rgt);
-                        Some(lft)
-                    }
-                };
+                let ((_, v), root) = root.pop();
+                self.root = root;
                 self.len -= 1;
-                Some(root.val)
+                Some(v)
             } else {
                 self.root = Some(root);
                 None
             }
         })
     }
-    fn splay<Q: ?Sized>(key: &Q, mut node: BoxNode<K, V>) -> (BoxNode<K, V>, Ordering)
-        where K: Borrow<Q>,
-              Q: Ord
+    fn splay_by<F>(mut node: BoxNode<K, V>, cmp: F) -> (BoxNode<K, V>, Ordering)
+        where F: Fn(&K) -> Ordering
     {
         let mut lft_root = None;
         let mut rgt_root = None;
-        let mut order = key.cmp(node.key.borrow());
+        let mut order = cmp(node.key.borrow());
         {
             let mut lft_rgtmost = &mut lft_root;
             let mut rgt_lftmost = &mut rgt_root;
@@ -173,7 +192,7 @@ impl<K, V> Tree<K, V>
                             break;
                         };
                         // zig
-                        order = key.cmp(child.key.borrow());
+                        order = cmp(child.key.borrow());
                         if let Ordering::Less = order {
                             if let Some(grand_child) = child.lft.take() {
                                 // zig-zig
@@ -181,7 +200,7 @@ impl<K, V> Tree<K, V>
                                 child.rgt = Some(node);
                                 node = child;
                                 child = grand_child;
-                                order = key.cmp(child.key.borrow());
+                                order = cmp(child.key.borrow());
                             }
                         }
                         let node_lft: usize = unsafe { mem::transmute(&mut node.lft) };
@@ -197,7 +216,7 @@ impl<K, V> Tree<K, V>
                             break;
                         };
                         // zag
-                        order = key.cmp(child.key.borrow());
+                        order = cmp(child.key.borrow());
                         if let Ordering::Greater = order {
                             if let Some(grand_child) = child.rgt.take() {
                                 // zag-zag
@@ -205,7 +224,7 @@ impl<K, V> Tree<K, V>
                                 child.lft = Some(node);
                                 node = child;
                                 child = grand_child;
-                                order = key.cmp(child.key.borrow());
+                                order = cmp(child.key.borrow());
                             }
                         }
                         let node_rgt: usize = unsafe { mem::transmute(&mut node.rgt) };
@@ -222,6 +241,12 @@ impl<K, V> Tree<K, V>
         node.lft = lft_root;
         node.rgt = rgt_root;
         (node, order)
+    }
+    fn splay<Q: ?Sized>(key: &Q, node: BoxNode<K, V>) -> (BoxNode<K, V>, Ordering)
+        where K: Borrow<Q>,
+              Q: Ord
+    {
+        Tree::splay_by(node, |k| key.cmp(k.borrow()))
     }
 }
 impl<K, V> Tree<K, V> {

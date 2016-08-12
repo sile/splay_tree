@@ -1,7 +1,7 @@
 splay_tree
 ==========
 
-[![](http://meritbadge.herokuapp.com/eetf)](https://crates.io/crates/splay_tree)
+[![](http://meritbadge.herokuapp.com/splay_tree)](https://crates.io/crates/splay_tree)
 
 `splay_tree` provides data structures such as map, set and heap which are based on a top-down splay tree.
 

@@ -61,16 +61,16 @@ mod map {
     }
 
     #[test]
-    fn find_lower_or_upper_bound() {
+    fn find_lower_or_upper_bound_key() {
         // small map
         let mut map: SplayMap<_, _> =
             vec![("foo", 1), ("bar", 2), ("baz", 3)].into_iter().collect();
-        assert_eq!(map.find_lower_bound("aaa"), Some(&"bar"));
-        assert_eq!(map.find_upper_bound("aaa"), Some(&"bar"));
-        assert_eq!(map.find_lower_bound("baz"), Some(&"baz"));
-        assert_eq!(map.find_upper_bound("baz"), Some(&"foo"));
-        assert_eq!(map.find_lower_bound("zzz"), None);
-        assert_eq!(map.find_upper_bound("zzz"), None);
+        assert_eq!(map.find_lower_bound_key("aaa"), Some(&"bar"));
+        assert_eq!(map.find_upper_bound_key("aaa"), Some(&"bar"));
+        assert_eq!(map.find_lower_bound_key("baz"), Some(&"baz"));
+        assert_eq!(map.find_upper_bound_key("baz"), Some(&"foo"));
+        assert_eq!(map.find_lower_bound_key("zzz"), None);
+        assert_eq!(map.find_upper_bound_key("zzz"), None);
 
         // large map
         use rand::{self, Rng};
@@ -78,10 +78,10 @@ mod map {
         rand::thread_rng().shuffle(&mut input);
 
         let mut map: SplayMap<_, _> = input.into_iter().map(|n| (n, n)).collect();
-        assert_eq!(map.find_lower_bound(&500), Some(&500));
-        assert_eq!(map.find_upper_bound(&500), Some(&501));
-        assert_eq!(map.find_lower_bound(&999), Some(&999));
-        assert_eq!(map.find_upper_bound(&999), None);
+        assert_eq!(map.find_lower_bound_key(&500), Some(&500));
+        assert_eq!(map.find_upper_bound_key(&500), Some(&501));
+        assert_eq!(map.find_lower_bound_key(&999), Some(&999));
+        assert_eq!(map.find_upper_bound_key(&999), None);
     }
 
     #[test]

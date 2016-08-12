@@ -163,7 +163,7 @@ impl<T> SplayHeap<T>
     }
 }
 impl<T> SplayHeap<T> {
-    /// Returns an iterator visiting all items in sorted (ascending) order.
+    /// Returns an iterator visiting all items in sorted (descending) order.
     ///
     /// # Examples
     /// ```

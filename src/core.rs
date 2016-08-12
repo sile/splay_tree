@@ -106,7 +106,7 @@ impl<K, V> Tree<K, V>
         self.root.take().and_then(move |root| {
             let (root, order) = Tree::splay(key, root);
             self.root = Some(root);
-            if let Ordering::Less = order {
+            if let Ordering::Greater = order {
                 self.root.as_ref().and_then(|n| n.rgt.as_ref().map(|r| &r.lftmost().key))
             } else {
                 self.root.as_ref().map(|n| &n.key)
@@ -120,7 +120,7 @@ impl<K, V> Tree<K, V>
         self.root.take().and_then(move |root| {
             let (root, order) = Tree::splay(key, root);
             self.root = Some(root);
-            if let Ordering::Greater = order {
+            if let Ordering::Less = order {
                 self.root.as_ref().map(|n| &n.key)
             } else {
                 self.root.as_ref().and_then(|n| n.rgt.as_ref().map(|r| &r.lftmost().key))
@@ -188,6 +188,14 @@ impl<K, V> Tree<K, V>
                 self.root = Some(root);
                 None
             }
+        })
+    }
+    pub fn pop_root(&mut self) -> Option<V> {
+        self.root.take().map(|root| {
+            let ((_, v), root) = root.pop();
+            self.root = root;
+            self.len -= 1;
+            v
         })
     }
     fn splay_by<F>(mut node: BoxNode<K, V>, cmp: F) -> (BoxNode<K, V>, Ordering)
@@ -266,102 +274,3 @@ impl<K, V> Tree<K, V>
         Tree::splay_by(node, |k| key.cmp(k.borrow()))
     }
 }
-impl<K, V> Tree<K, V> {
-    pub fn iter(&self) -> Iter<K, V> {
-        Iter::new(self)
-    }
-    // pub fn keys(&self) -> Keys<K, V> {
-    //     Keys::new(self)
-    // }
-}
-
-// XXX: name
-enum Item<T> {
-    Left(T),
-    Right(T),
-}
-pub struct Iter<'a, K: 'a, V: 'a> {
-    stack: Vec<Item<&'a Node<K, V>>>,
-}
-impl<'a, K: 'a, V: 'a> Iter<'a, K, V> {
-    pub fn new(tree: &'a Tree<K, V>) -> Self {
-        if let Some(root) = tree.root.as_ref() {
-            Iter { stack: vec![Item::Left(root)] }
-        } else {
-            Iter { stack: vec![] }
-        }
-    }
-}
-impl<'a, K: 'a, V: 'a> Iterator for Iter<'a, K, V> {
-    type Item = (&'a K, &'a V);
-    fn next(&mut self) -> Option<Self::Item> {
-        while let Some(e) = self.stack.pop() {
-            match e {
-                Item::Left(e) => {
-                    self.stack.push(Item::Right(e));
-                    if let Some(child) = e.lft.as_ref() {
-                        self.stack.push(Item::Left(child));
-                    }
-                }
-                Item::Right(e) => {
-                    if let Some(child) = e.rgt.as_ref() {
-                        self.stack.push(Item::Left(child));
-                    }
-                    return Some((&e.key, &e.val));
-                }
-            }
-        }
-        None
-    }
-}
-
-
-// pub struct RevIter<'a, K: 'a, V: 'a> {
-//     stack: Vec<Item<&'a Node<K, V>>>,
-// }
-// impl<'a, K: 'a, V: 'a> RevIter<'a, K, V> {
-//     pub fn new(tree: &'a Tree<K, V>) -> Self {
-//         if let Some(root) = tree.root.as_ref() {
-//             RevIter { stack: vec![Item::Right(root)] }
-//         } else {
-//             RevIter { stack: vec![] }
-//         }
-//     }
-// }
-// impl<'a, K: 'a, V: 'a> Iterator for RevIter<'a, K, V> {
-//     type Item = (&'a K, &'a V);
-//     fn next(&mut self) -> Option<Self::Item> {
-//         while let Some(e) = self.stack.pop() {
-//             match e {
-//                 Item::Right(e) => {
-//                     self.stack.push(Item::Left(e));
-//                     if let Some(child) = e.rgt.as_ref() {
-//                         self.stack.push(Item::Right(child));
-//                     }
-//                 }
-//                 Item::Left(e) => {
-//                     if let Some(child) = e.lft.as_ref() {
-//                         self.stack.push(Item::Right(child));
-//                     }
-//                     return Some((&e.key, &e.val));
-//                 }
-//             }
-//         }
-//         None
-//     }
-// }
-
-// pub struct Keys<'a, K: 'a, V: 'a> {
-//     iter: Iter<'a, K, V>,
-// }
-// impl<'a, K: 'a, V: 'a> Keys<'a, K, V> {
-//     fn new(tree: &'a Tree<K, V>) -> Self {
-//         Keys { iter: Iter::new(tree) }
-//     }
-// }
-// impl<'a, K: 'a, V: 'a> Iterator for Keys<'a, K, V> {
-//     type Item = &'a K;
-//     fn next(&mut self) -> Option<Self::Item> {
-//         self.iter.next().map(|e| e.0)
-//     }
-// }

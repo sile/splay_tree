@@ -1,15 +1,16 @@
 //! A priority queue implemented with a splay tree.
-use std::iter;
+use std;
 use std::cmp;
 use core;
+use iter;
 
 /// `SplayHeap` iterator.
 pub struct Iter<'a, T: 'a> {
-    iter: core::Iter<'a, Item<T>, ()>,
+    iter: iter::Iter<'a, Item<T>, ()>,
 }
 impl<'a, T: 'a> Iter<'a, T> {
     fn new(tree: &'a core::Tree<Item<T>, ()>) -> Self {
-        Iter { iter: core::Iter::new(tree) }
+        Iter { iter: iter::Iter::new(tree) }
     }
 }
 impl<'a, T: 'a> Iterator for Iter<'a, T> {
@@ -217,11 +218,11 @@ impl<T> Default for SplayHeap<T>
         SplayHeap::new()
     }
 }
-impl<T> iter::FromIterator<T> for SplayHeap<T>
+impl<T> std::iter::FromIterator<T> for SplayHeap<T>
     where T: Ord
 {
     fn from_iter<I>(iter: I) -> Self
-        where I: iter::IntoIterator<Item = T>
+        where I: IntoIterator<Item = T>
     {
         let mut heap = SplayHeap::new();
         for x in iter {

@@ -24,7 +24,7 @@ Add following lines to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-eetf = "0.1"
+splay_tree = "0.1"
 ```
 
 

@@ -1,6 +1,9 @@
+use std::cmp;
 use std::mem;
+use std::hash;
 use std::cmp::Ordering;
 use std::borrow::Borrow;
+use iter;
 
 pub type BoxNode<K, V> = Box<Node<K, V>>;
 pub type MaybeNode<K, V> = Option<BoxNode<K, V>>;
@@ -127,22 +130,6 @@ impl<K, V> Tree<K, V>
             }
         })
     }
-    pub fn get_rgtmost(&mut self) -> Option<(&K, &V)> {
-        self.root.take().and_then(move |root| {
-            let (root, _) = Tree::splay_by(root, |_| Ordering::Greater);
-            self.root = Some(root);
-            self.root.as_ref().map(|n| (&n.key, &n.val))
-        })
-    }
-    pub fn take_rgtmost(&mut self) -> Option<(K, V)> {
-        self.root.take().and_then(move |root| {
-            let (root, _) = Tree::splay_by(root, |_| Ordering::Greater);
-            let (e, root) = root.pop();
-            self.root = root;
-            self.len -= 1;
-            Some(e)
-        })
-    }
     pub fn get_lftmost(&mut self) -> Option<(&K, &V)> {
         self.root.take().and_then(move |root| {
             let (root, _) = Tree::splay_by(root, |_| Ordering::Less);
@@ -190,12 +177,12 @@ impl<K, V> Tree<K, V>
             }
         })
     }
-    pub fn pop_root(&mut self) -> Option<V> {
+    pub fn pop_root(&mut self) -> Option<(K, V)> {
         self.root.take().map(|root| {
-            let ((_, v), root) = root.pop();
+            let (e, root) = root.pop();
             self.root = root;
             self.len -= 1;
-            v
+            e
         })
     }
     fn splay_by<F>(mut node: BoxNode<K, V>, cmp: F) -> (BoxNode<K, V>, Ordering)
@@ -272,5 +259,80 @@ impl<K, V> Tree<K, V>
               Q: Ord
     {
         Tree::splay_by(node, |k| key.cmp(k.borrow()))
+    }
+}
+impl<K, V> Tree<K, V> {
+    fn iter(&self) -> iter::Iter<K, V> {
+        iter::Iter::new(self)
+    }
+}
+impl<K, V> hash::Hash for Tree<K, V>
+    where K: hash::Hash,
+          V: hash::Hash
+{
+    fn hash<H>(&self, state: &mut H)
+        where H: hash::Hasher
+    {
+        for (k, v) in self.iter() {
+            k.hash(state);
+            v.hash(state);
+        }
+    }
+}
+impl<K, V> PartialEq for Tree<K, V>
+    where K: PartialEq,
+          V: PartialEq
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.len == other.len && self.iter().zip(other.iter()).all(|(a, b)| a.eq(&b))
+    }
+}
+impl<K, V> Eq for Tree<K, V>
+    where K: Eq,
+          V: Eq
+{
+}
+impl<K, V> PartialOrd for Tree<K, V>
+    where K: PartialOrd,
+          V: PartialOrd
+{
+    fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
+        let mut i0 = self.iter();
+        let mut i1 = other.iter();
+        loop {
+            match (i0.next(), i1.next()) {
+                (None, None) => return Some(cmp::Ordering::Equal),
+                (None, _) => return Some(cmp::Ordering::Less),
+                (_, None) => return Some(cmp::Ordering::Greater),
+                (Some(e0), Some(e1)) => {
+                    match e0.partial_cmp(&e1) {
+                        Some(cmp::Ordering::Equal) => {}
+                        not_equal => return not_equal,
+                    }
+                }
+            }
+        }
+    }
+}
+impl<K, V> Ord for Tree<K, V>
+    where K: Ord,
+          V: Ord
+{
+    fn cmp(&self, other: &Self) -> cmp::Ordering {
+        let mut i0 = self.iter();
+        let mut i1 = other.iter();
+        loop {
+            match (i0.next(), i1.next()) {
+                (None, None) => return cmp::Ordering::Equal,
+                (None, _) => return cmp::Ordering::Less,
+                (_, None) => return cmp::Ordering::Greater,
+                (Some(e0), Some(e1)) => {
+                    match e0.cmp(&e1) {
+                        cmp::Ordering::Equal => {}
+                        not_equal => return not_equal,
+                    }
+                }
+            }
+        }
     }
 }

@@ -1,8 +1,6 @@
 //! A map based on a B-Tree.
 use std;
 use std::mem;
-use std::cmp;
-use std::hash;
 use std::borrow::Borrow;
 use core;
 use iter;
@@ -51,7 +49,7 @@ use iter;
 ///     prinln!("{}: {}", counter.get(&k).unwrap_or(0));
 /// }
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct SplayMap<K, V> {
     tree: core::Tree<K, V>,
 }
@@ -170,11 +168,11 @@ impl<K, V> SplayMap<K, V>
     /// map.insert(1, ());
     /// map.insert(3, ());
     ///
-    /// assert_eq!(map.find_lower_bound(&0), Some(&1));
-    /// assert_eq!(map.find_lower_bound(&1), Some(&1));
-    /// assert_eq!(map.find_lower_bound(&4), None);
+    /// assert_eq!(map.find_lower_bound_key(&0), Some(&1));
+    /// assert_eq!(map.find_lower_bound_key(&1), Some(&1));
+    /// assert_eq!(map.find_lower_bound_key(&4), None);
     /// ```
-    pub fn find_lower_bound<Q: ?Sized>(&mut self, key: &Q) -> Option<&K>
+    pub fn find_lower_bound_key<Q: ?Sized>(&mut self, key: &Q) -> Option<&K>
         where K: Borrow<Q>,
               Q: Ord
     {
@@ -191,11 +189,11 @@ impl<K, V> SplayMap<K, V>
     /// map.insert(1, ());
     /// map.insert(3, ());
     ///
-    /// assert_eq!(map.find_upper_bound(&0), Some(&1));
-    /// assert_eq!(map.find_upper_bound(&1), Some(&3));
-    /// assert_eq!(map.find_upper_bound(&4), None);
+    /// assert_eq!(map.find_upper_bound_key(&0), Some(&1));
+    /// assert_eq!(map.find_upper_bound_key(&1), Some(&3));
+    /// assert_eq!(map.find_upper_bound_key(&4), None);
     /// ```
-    pub fn find_upper_bound<Q: ?Sized>(&mut self, key: &Q) -> Option<&K>
+    pub fn find_upper_bound_key<Q: ?Sized>(&mut self, key: &Q) -> Option<&K>
         where K: Borrow<Q>,
               Q: Ord
     {
@@ -458,76 +456,6 @@ impl<'a, K, V> Extend<(&'a K, &'a V)> for SplayMap<K, V>
         }
     }
 }
-impl<K, V> hash::Hash for SplayMap<K, V>
-    where K: hash::Hash,
-          V: hash::Hash
-{
-    fn hash<H>(&self, state: &mut H)
-        where H: hash::Hasher
-    {
-        for (k, v) in self {
-            k.hash(state);
-            v.hash(state);
-        }
-    }
-}
-impl<K, V> PartialEq for SplayMap<K, V>
-    where K: PartialEq,
-          V: PartialEq
-{
-    fn eq(&self, other: &Self) -> bool {
-        self.len() == other.len() && self.iter().zip(other.iter()).all(|(a, b)| a.eq(&b))
-    }
-}
-impl<K, V> Eq for SplayMap<K, V>
-    where K: Eq,
-          V: Eq
-{
-}
-impl<K, V> PartialOrd for SplayMap<K, V>
-    where K: PartialOrd,
-          V: PartialOrd
-{
-    fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
-        let mut i0 = self.iter();
-        let mut i1 = other.iter();
-        loop {
-            match (i0.next(), i1.next()) {
-                (None, None) => return Some(cmp::Ordering::Equal),
-                (None, _) => return Some(cmp::Ordering::Less),
-                (_, None) => return Some(cmp::Ordering::Greater),
-                (Some(e0), Some(e1)) => {
-                    match e0.partial_cmp(&e1) {
-                        Some(cmp::Ordering::Equal) => {}
-                        not_equal => return not_equal,
-                    }
-                }
-            }
-        }
-    }
-}
-impl<K, V> Ord for SplayMap<K, V>
-    where K: Ord,
-          V: Ord
-{
-    fn cmp(&self, other: &Self) -> cmp::Ordering {
-        let mut i0 = self.iter();
-        let mut i1 = other.iter();
-        loop {
-            match (i0.next(), i1.next()) {
-                (None, None) => return cmp::Ordering::Equal,
-                (None, _) => return cmp::Ordering::Less,
-                (_, None) => return cmp::Ordering::Greater,
-                (Some(e0), Some(e1)) => {
-                    match e0.cmp(&e1) {
-                        cmp::Ordering::Equal => {}
-                        not_equal => return not_equal,
-                    }
-                }
-            }
-        }
-    }
-}
 
 /// An iterator over a SplayMap's entries.
 pub struct Iter<'a, K: 'a, V: 'a>(iter::Iter<'a, K, V>);
@@ -683,7 +611,7 @@ impl<'a, K: 'a, V: 'a> OccupiedEntry<'a, K, V>
 
     /// Takes the value of the entry out of the map, and returns it.
     pub fn remove(self) -> V {
-        self.tree.pop_root().unwrap()
+        self.tree.pop_root().unwrap().1
     }
 }
 

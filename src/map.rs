@@ -289,7 +289,7 @@ impl<K, V> SplayMap<K, V> {
         self.tree.len
     }
 
-    /// Returns true if tthe map contains no elements.
+    /// Returns true if the map contains no elements.
     ///
     /// #  Examples
     /// ```

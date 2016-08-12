@@ -1,3 +1,4 @@
+//! Top-down splay tree
 use std::cmp;
 use std::mem;
 use std::hash;
@@ -15,7 +16,9 @@ pub struct Node<K, V> {
     pub lft: MaybeNode<K, V>,
     pub rgt: MaybeNode<K, V>,
 }
-impl<K, V> Node<K, V> {
+impl<K, V> Node<K, V>
+    where K: Ord
+{
     pub fn new(key: K, value: V, lft: MaybeNode<K, V>, rgt: MaybeNode<K, V>) -> Box<Self> {
         Box::new(Node {
             key: key,
@@ -24,27 +27,6 @@ impl<K, V> Node<K, V> {
             rgt: rgt,
         })
     }
-    fn lftmost_mut(&mut self) -> &mut Node<K, V> {
-        let mut next = self;
-        loop {
-            let curr = next;
-            match curr.lft {
-                None => return curr,
-                Some(ref mut lft) => next = lft,
-            }
-        }
-    }
-    // TODO: splay?
-    fn lftmost(&self) -> &Node<K, V> {
-        let mut next = self;
-        loop {
-            let curr = next;
-            match curr.lft {
-                None => return curr,
-                Some(ref lft) => next = lft,
-            }
-        }
-    }
     fn pop(mut self) -> ((K, V), MaybeNode<K, V>) {
         let root = match (self.lft.take(), self.rgt.take()) {
             (None, None) => None,
@@ -52,7 +34,8 @@ impl<K, V> Node<K, V> {
             (None, Some(rgt)) => Some(rgt),
             (Some(mut lft), Some(mut rgt)) => {
                 if let Some(lft_rgt) = lft.rgt.take() {
-                    rgt.lftmost_mut().lft = Some(lft_rgt);
+                    rgt = Tree::lftmost(rgt);
+                    rgt.lft = Some(lft_rgt);
                 }
                 lft.rgt = Some(rgt);
                 Some(lft)
@@ -110,7 +93,9 @@ impl<K, V> Tree<K, V>
             let (root, order) = Tree::splay(key, root);
             self.root = Some(root);
             if let Ordering::Greater = order {
-                self.root.as_ref().and_then(|n| n.rgt.as_ref().map(|r| &r.lftmost().key))
+                let root = self.root.as_mut().unwrap();
+                root.rgt = root.rgt.take().map(Tree::lftmost);
+                root.rgt.as_ref().map(|r| &r.key)
             } else {
                 self.root.as_ref().map(|n| &n.key)
             }
@@ -126,9 +111,15 @@ impl<K, V> Tree<K, V>
             if let Ordering::Less = order {
                 self.root.as_ref().map(|n| &n.key)
             } else {
-                self.root.as_ref().and_then(|n| n.rgt.as_ref().map(|r| &r.lftmost().key))
+                let root = self.root.as_mut().unwrap();
+                root.rgt = root.rgt.take().map(Tree::lftmost);
+                root.rgt.as_ref().map(|r| &r.key)
             }
         })
+    }
+    // XXX:
+    fn lftmost(node: BoxNode<K, V>) -> BoxNode<K, V> {
+        Tree::splay_by(node, |_| Ordering::Less).0
     }
     pub fn get_lftmost(&mut self) -> Option<(&K, &V)> {
         self.root.take().and_then(move |root| {

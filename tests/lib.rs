@@ -285,11 +285,11 @@ mod set {
     fn large_set() {
         use rand::{self, Rng};
 
-        let mut input = (0..1000).into_iter().collect::<Vec<_>>();
+        let mut input = (0..1000).collect::<Vec<_>>();
         rand::thread_rng().shuffle(&mut input);
 
-        let mut set: SplaySet<_> = input.into_iter().collect();
-        for i in 0..1000 {
+        let mut set: SplaySet<_> = input.iter().cloned().collect();
+        for i in input {
             assert!(set.remove(&i));
         }
         assert!(set.is_empty());

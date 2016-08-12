@@ -1,18 +1,19 @@
+//! Iterators for splay tree
 use core::Node;
 use core::Tree;
 
-// XXX: name
-enum Item<T> {
-    Left(T),
-    Right(T),
+enum Visit<E, N> {
+    Elem(E),
+    Node(N),
 }
+
 pub struct Iter<'a, K: 'a, V: 'a> {
-    stack: Vec<Item<&'a Node<K, V>>>,
+    stack: Vec<Visit<(&'a K, &'a V), &'a Node<K, V>>>,
 }
 impl<'a, K: 'a, V: 'a> Iter<'a, K, V> {
     pub fn new(tree: &'a Tree<K, V>) -> Self {
         if let Some(root) = tree.root.as_ref() {
-            Iter { stack: vec![Item::Left(root)] }
+            Iter { stack: vec![Visit::Node(root)] }
         } else {
             Iter { stack: vec![] }
         }
@@ -21,19 +22,15 @@ impl<'a, K: 'a, V: 'a> Iter<'a, K, V> {
 impl<'a, K: 'a, V: 'a> Iterator for Iter<'a, K, V> {
     type Item = (&'a K, &'a V);
     fn next(&mut self) -> Option<Self::Item> {
-        while let Some(e) = self.stack.pop() {
-            match e {
-                Item::Left(e) => {
-                    self.stack.push(Item::Right(e));
-                    if let Some(child) = e.lft.as_ref() {
-                        self.stack.push(Item::Left(child));
-                    }
+        while let Some(v) = self.stack.pop() {
+            match v {
+                Visit::Node(n) => {
+                    n.rgt.as_ref().map(|rgt| self.stack.push(Visit::Node(rgt)));
+                    self.stack.push(Visit::Elem((&n.key, &n.val)));
+                    n.lft.as_ref().map(|lft| self.stack.push(Visit::Node(lft)));
                 }
-                Item::Right(e) => {
-                    if let Some(child) = e.rgt.as_ref() {
-                        self.stack.push(Item::Left(child));
-                    }
-                    return Some((&e.key, &e.val));
+                Visit::Elem(e) => {
+                    return Some(e);
                 }
             }
         }
@@ -42,12 +39,12 @@ impl<'a, K: 'a, V: 'a> Iterator for Iter<'a, K, V> {
 }
 
 pub struct IntoIter<K, V> {
-    stack: Vec<Item<Node<K, V>>>,
+    stack: Vec<Visit<(K, V), Node<K, V>>>,
 }
 impl<K, V> IntoIter<K, V> {
-    pub fn new(mut tree: Tree<K, V>) -> Self {
-        if let Some(root) = tree.root.take() {
-            IntoIter { stack: vec![Item::Left(*root)] }
+    pub fn new(tree: Tree<K, V>) -> Self {
+        if let Some(root) = tree.root {
+            IntoIter { stack: vec![Visit::Node(*root)] }
         } else {
             IntoIter { stack: vec![] }
         }
@@ -56,20 +53,15 @@ impl<K, V> IntoIter<K, V> {
 impl<K, V> Iterator for IntoIter<K, V> {
     type Item = (K, V);
     fn next(&mut self) -> Option<Self::Item> {
-        while let Some(e) = self.stack.pop() {
-            match e {
-                Item::Left(mut e) => {
-                    let lft = e.lft.take();
-                    self.stack.push(Item::Right(e));
-                    if let Some(child) = lft {
-                        self.stack.push(Item::Left(*child));
-                    }
+        while let Some(v) = self.stack.pop() {
+            match v {
+                Visit::Node(mut n) => {
+                    n.rgt.take().map(|rgt| self.stack.push(Visit::Node(*rgt)));
+                    self.stack.push(Visit::Elem((n.key, n.val)));
+                    n.lft.take().map(|lft| self.stack.push(Visit::Node(*lft)));
                 }
-                Item::Right(mut e) => {
-                    if let Some(child) = e.rgt.take() {
-                        self.stack.push(Item::Left(*child));
-                    }
-                    return Some((e.key, e.val));
+                Visit::Elem(e) => {
+                    return Some(e);
                 }
             }
         }
@@ -77,18 +69,13 @@ impl<K, V> Iterator for IntoIter<K, V> {
     }
 }
 
-enum Item2<K, V, T> {
-    Left(T),
-    Right((K, V), Option<T>),
-}
-
 pub struct IterMut<'a, K: 'a, V: 'a> {
-    stack: Vec<Item2<&'a K, &'a mut V, &'a mut Node<K, V>>>,
+    stack: Vec<Visit<(&'a K, &'a mut V), &'a mut Node<K, V>>>,
 }
 impl<'a, K: 'a, V: 'a> IterMut<'a, K, V> {
     pub fn new(tree: &'a mut Tree<K, V>) -> Self {
         if let Some(root) = tree.root.as_mut() {
-            IterMut { stack: vec![Item2::Left(root)] }
+            IterMut { stack: vec![Visit::Node(root)] }
         } else {
             IterMut { stack: vec![] }
         }
@@ -97,21 +84,14 @@ impl<'a, K: 'a, V: 'a> IterMut<'a, K, V> {
 impl<'a, K: 'a, V: 'a> Iterator for IterMut<'a, K, V> {
     type Item = (&'a K, &'a mut V);
     fn next(&mut self) -> Option<Self::Item> {
-        while let Some(e) = self.stack.pop() {
-            match e {
-                Item2::Left(e) => {
-                    use std::borrow::BorrowMut;
-                    self.stack
-                        .push(Item2::Right((&e.key, &mut e.val),
-                                           e.rgt.as_mut().map(|r| r.borrow_mut())));
-                    if let Some(child) = e.lft.as_mut() {
-                        self.stack.push(Item2::Left(child));
-                    }
+        while let Some(v) = self.stack.pop() {
+            match v {
+                Visit::Node(n) => {
+                    n.rgt.as_mut().map(|rgt| self.stack.push(Visit::Node(rgt)));
+                    self.stack.push(Visit::Elem((&n.key, &mut n.val)));
+                    n.lft.as_mut().map(|lft| self.stack.push(Visit::Node(lft)));
                 }
-                Item2::Right(e, rgt) => {
-                    if let Some(child) = rgt {
-                        self.stack.push(Item2::Left(child));
-                    }
+                Visit::Elem(e) => {
                     return Some(e);
                 }
             }

@@ -108,7 +108,7 @@ impl<K, V> SplayMap<K, V>
         where K: Borrow<Q>,
               Q: Ord
     {
-        self.get(key).is_some()
+        self.tree.contains_key(key)
     }
 
     /// Returns a reference to the value corresponding to the key.

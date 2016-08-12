@@ -19,7 +19,7 @@ pub struct Node<K, V> {
 impl<K, V> Node<K, V>
     where K: Ord
 {
-    pub fn new(key: K, value: V, lft: MaybeNode<K, V>, rgt: MaybeNode<K, V>) -> Box<Self> {
+    fn new(key: K, value: V, lft: MaybeNode<K, V>, rgt: MaybeNode<K, V>) -> Box<Self> {
         Box::new(Node {
             key: key,
             val: value,
@@ -27,158 +27,19 @@ impl<K, V> Node<K, V>
             rgt: rgt,
         })
     }
-    fn pop(mut self) -> ((K, V), MaybeNode<K, V>) {
-        let root = match (self.lft.take(), self.rgt.take()) {
-            (None, None) => None,
-            (Some(lft), None) => Some(lft),
-            (None, Some(rgt)) => Some(rgt),
-            (Some(mut lft), Some(mut rgt)) => {
-                if let Some(lft_rgt) = lft.rgt.take() {
-                    rgt = Tree::lftmost(rgt);
-                    rgt.lft = Some(lft_rgt);
-                }
-                lft.rgt = Some(rgt);
-                Some(lft)
-            }
-        };
-        ((self.key, self.val), root)
-    }
-}
-
-#[derive(Debug, Clone)]
-pub struct Tree<K, V> {
-    pub root: MaybeNode<K, V>,
-    pub len: usize,
-}
-impl<K, V> Tree<K, V>
-    where K: Ord
-{
-    pub fn new() -> Self {
-        Tree {
-            root: None,
-            len: 0,
-        }
-    }
-    pub fn insert(&mut self, key: K, value: V) -> Option<V> {
-        let (new_root, old_value) = if let Some(root) = self.root.take() {
-            let (mut root, order) = Tree::splay(&key, root);
-            match order {
-                Ordering::Equal => {
-                    let old = mem::replace(&mut root.val, value);
-                    (root, Some(old))
-                }
-                Ordering::Less => {
-                    let lft = root.lft.take();
-                    (Node::new(key, value, lft, Some(root)), None)
-                }
-                Ordering::Greater => {
-                    let rgt = root.rgt.take();
-                    (Node::new(key, value, Some(root), rgt), None)
-                }
-            }
-        } else {
-            (Node::new(key, value, None, None), None)
-        };
-        self.root = Some(new_root);
-        if old_value.is_none() {
-            self.len += 1;
-        }
-        old_value
-    }
-    pub fn find_lower_bound<Q: ?Sized>(&mut self, key: &Q) -> Option<&K>
+    fn splay<Q: ?Sized>(self: BoxNode<K, V>, key: &Q) -> (BoxNode<K, V>, Ordering)
         where K: Borrow<Q>,
               Q: Ord
     {
-        self.root.take().and_then(move |root| {
-            let (root, order) = Tree::splay(key, root);
-            self.root = Some(root);
-            if let Ordering::Greater = order {
-                let root = self.root.as_mut().unwrap();
-                root.rgt = root.rgt.take().map(Tree::lftmost);
-                root.rgt.as_ref().map(|r| &r.key)
-            } else {
-                self.root.as_ref().map(|n| &n.key)
-            }
-        })
+        self.splay_by(|k| key.cmp(k.borrow()))
     }
-    pub fn find_upper_bound<Q: ?Sized>(&mut self, key: &Q) -> Option<&K>
-        where K: Borrow<Q>,
-              Q: Ord
-    {
-        self.root.take().and_then(move |root| {
-            let (root, order) = Tree::splay(key, root);
-            self.root = Some(root);
-            if let Ordering::Less = order {
-                self.root.as_ref().map(|n| &n.key)
-            } else {
-                let root = self.root.as_mut().unwrap();
-                root.rgt = root.rgt.take().map(Tree::lftmost);
-                root.rgt.as_ref().map(|r| &r.key)
-            }
-        })
+    fn splay_lftmost(self: BoxNode<K, V>) -> BoxNode<K, V> {
+        self.splay_by(|_| Ordering::Less).0
     }
-    // XXX:
-    fn lftmost(node: BoxNode<K, V>) -> BoxNode<K, V> {
-        Tree::splay_by(node, |_| Ordering::Less).0
-    }
-    pub fn get_lftmost(&mut self) -> Option<(&K, &V)> {
-        self.root.take().and_then(move |root| {
-            let (root, _) = Tree::splay_by(root, |_| Ordering::Less);
-            self.root = Some(root);
-            self.root.as_ref().map(|n| (&n.key, &n.val))
-        })
-    }
-    pub fn take_lftmost(&mut self) -> Option<(K, V)> {
-        self.root.take().and_then(move |root| {
-            let (root, _) = Tree::splay_by(root, |_| Ordering::Less);
-            let (e, root) = root.pop();
-            self.root = root;
-            self.len -= 1;
-            Some(e)
-        })
-    }
-    pub fn get<Q: ?Sized>(&mut self, key: &Q) -> Option<&mut V>
-        where K: Borrow<Q>,
-              Q: Ord
-    {
-        self.root.take().and_then(move |root| {
-            let (root, order) = Tree::splay(key, root);
-            self.root = Some(root);
-            if let Ordering::Equal = order {
-                self.root.as_mut().map(|n| &mut n.val)
-            } else {
-                None
-            }
-        })
-    }
-    pub fn remove<Q: ?Sized>(&mut self, key: &Q) -> Option<V>
-        where K: Borrow<Q>,
-              Q: Ord
-    {
-        self.root.take().and_then(|root| {
-            let (root, order) = Tree::splay(key, root);
-            if let Ordering::Equal = order {
-                let ((_, v), root) = root.pop();
-                self.root = root;
-                self.len -= 1;
-                Some(v)
-            } else {
-                self.root = Some(root);
-                None
-            }
-        })
-    }
-    pub fn pop_root(&mut self) -> Option<(K, V)> {
-        self.root.take().map(|root| {
-            let (e, root) = root.pop();
-            self.root = root;
-            self.len -= 1;
-            e
-        })
-    }
-    fn splay_by<F>(mut node: BoxNode<K, V>, cmp: F) -> (BoxNode<K, V>, Ordering)
+    fn splay_by<F>(self: BoxNode<K, V>, cmp: F) -> (BoxNode<K, V>, Ordering)
         where F: Fn(&K) -> Ordering
     {
+        let mut node = self;
         let mut lft_root = None;
         let mut rgt_root = None;
         let mut order = cmp(node.key.borrow());
@@ -245,11 +106,141 @@ impl<K, V> Tree<K, V>
         node.rgt = rgt_root;
         (node, order)
     }
-    fn splay<Q: ?Sized>(key: &Q, node: BoxNode<K, V>) -> (BoxNode<K, V>, Ordering)
+    fn pop(mut self) -> ((K, V), MaybeNode<K, V>) {
+        let root = match (self.lft.take(), self.rgt.take()) {
+            (None, None) => None,
+            (Some(lft), None) => Some(lft),
+            (None, Some(rgt)) => Some(rgt),
+            (Some(mut lft), Some(mut rgt)) => {
+                if let Some(lft_rgt) = lft.rgt.take() {
+                    rgt = rgt.splay_lftmost();
+                    rgt.lft = Some(lft_rgt);
+                }
+                lft.rgt = Some(rgt);
+                Some(lft)
+            }
+        };
+        ((self.key, self.val), root)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Tree<K, V> {
+    pub root: MaybeNode<K, V>,
+    pub len: usize,
+}
+impl<K, V> Tree<K, V>
+    where K: Ord
+{
+    pub fn new() -> Self {
+        Tree {
+            root: None,
+            len: 0,
+        }
+    }
+    pub fn insert(&mut self, key: K, value: V) -> Option<V> {
+        let (new_root, old_value) = if let Some(root) = self.root.take() {
+            let (mut root, order) = root.splay(&key);
+            match order {
+                Ordering::Equal => {
+                    let old = mem::replace(&mut root.val, value);
+                    (root, Some(old))
+                }
+                Ordering::Less => {
+                    let lft = root.lft.take();
+                    (Node::new(key, value, lft, Some(root)), None)
+                }
+                Ordering::Greater => {
+                    let rgt = root.rgt.take();
+                    (Node::new(key, value, Some(root), rgt), None)
+                }
+            }
+        } else {
+            (Node::new(key, value, None, None), None)
+        };
+        self.root = Some(new_root);
+        if old_value.is_none() {
+            self.len += 1;
+        }
+        old_value
+    }
+    pub fn find_lower_bound<Q: ?Sized>(&mut self, key: &Q) -> Option<&K>
         where K: Borrow<Q>,
               Q: Ord
     {
-        Tree::splay_by(node, |k| key.cmp(k.borrow()))
+        self.root.take().and_then(move |root| {
+            let (root, order) = root.splay(key);
+            self.root = Some(root);
+            if let Ordering::Greater = order {
+                let root = self.root.as_mut().unwrap();
+                root.rgt = root.rgt.take().map(|r| r.splay_lftmost());
+                root.rgt.as_ref().map(|r| &r.key)
+            } else {
+                self.root.as_ref().map(|n| &n.key)
+            }
+        })
+    }
+    pub fn find_upper_bound<Q: ?Sized>(&mut self, key: &Q) -> Option<&K>
+        where K: Borrow<Q>,
+              Q: Ord
+    {
+        self.root.take().and_then(move |root| {
+            let (root, order) = root.splay(key);
+            self.root = Some(root);
+            if let Ordering::Less = order {
+                self.root.as_ref().map(|n| &n.key)
+            } else {
+                let root = self.root.as_mut().unwrap();
+                root.rgt = root.rgt.take().map(|r| r.splay_lftmost());
+                root.rgt.as_ref().map(|r| &r.key)
+            }
+        })
+    }
+    pub fn contains_key<Q: ?Sized>(&mut self, key: &Q) -> bool
+        where K: Borrow<Q>,
+              Q: Ord
+    {
+        self.root.take().map_or(false, move |root| {
+            let (root, order) = root.splay(key);
+            self.root = Some(root);
+            order == Ordering::Equal
+        })
+    }
+    pub fn pop_root(&mut self) -> Option<(K, V)> {
+        self.root.take().map(|root| {
+            let (e, root) = root.pop();
+            self.root = root;
+            self.len -= 1;
+            e
+        })
+    }
+    pub fn get_lftmost(&mut self) -> Option<(&K, &V)> {
+        self.root = self.root.take().map(|n| n.splay_lftmost());
+        self.root.as_ref().map(|n| (&n.key, &n.val))
+    }
+    pub fn take_lftmost(&mut self) -> Option<(K, V)> {
+        self.root = self.root.take().map(|n| n.splay_lftmost());
+        self.pop_root()
+    }
+    pub fn get<Q: ?Sized>(&mut self, key: &Q) -> Option<&mut V>
+        where K: Borrow<Q>,
+              Q: Ord
+    {
+        if self.contains_key(key) {
+            self.root.as_mut().map(|n| &mut n.val)
+        } else {
+            None
+        }
+    }
+    pub fn remove<Q: ?Sized>(&mut self, key: &Q) -> Option<V>
+        where K: Borrow<Q>,
+              Q: Ord
+    {
+        if self.contains_key(key) {
+            self.pop_root().map(|(_, v)| v)
+        } else {
+            None
+        }
     }
 }
 impl<K, V> Tree<K, V> {

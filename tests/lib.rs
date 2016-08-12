@@ -1,8 +1,18 @@
 extern crate splay_tree;
 extern crate rand;
 
+use std::hash;
+
+fn hash<T: hash::Hash>(x: &T) -> u64 {
+    use std::hash::Hasher;
+    let mut hasher = hash::SipHasher::new();
+    x.hash(&mut hasher);
+    hasher.finish()
+}
+
 mod map {
     use splay_tree::SplayMap;
+    use super::hash;
 
     #[test]
     fn new() {
@@ -147,13 +157,181 @@ mod map {
         }
         assert!(map.is_empty());
     }
+}
 
-    use std::hash;
-    fn hash<T: hash::Hash>(x: &T) -> u64 {
-        use std::hash::Hasher;
-        let mut hasher = hash::SipHasher::new();
-        x.hash(&mut hasher);
-        hasher.finish()
+mod set {
+    use splay_tree::SplaySet;
+    use super::hash;
+
+    #[test]
+    fn new() {
+        let set: SplaySet<()> = SplaySet::new();
+        assert!(set.is_empty());
+    }
+
+    #[test]
+    fn default() {
+        let set: SplaySet<()> = SplaySet::default();
+        assert!(set.is_empty());
+    }
+
+    #[test]
+    fn insert_and_replace_contains() {
+        let mut set = SplaySet::new();
+
+        assert!(!set.contains("foo"));
+        assert_eq!(set.insert("foo"), true);
+        assert!(set.contains("foo"));
+        assert_eq!(set.insert("foo"), false);
+        assert!(set.contains("foo"));
+
+        assert_eq!(set.replace("bar"), None);
+        assert_eq!(set.replace("bar"), Some("bar"));
+        assert!(set.contains("bar"));
+    }
+
+    #[test]
+    fn clear() {
+        let mut set = SplaySet::new();
+        set.insert("foo");
+        assert!(set.contains("foo"));
+        set.clear();
+        assert!(!set.contains("foo"));
+    }
+
+    #[test]
+    fn get() {
+        let mut set = SplaySet::new();
+        assert_eq!(set.get("foo"), None);
+        set.insert("foo");
+        assert_eq!(set.get("foo"), Some(&"foo"));
+    }
+
+    #[test]
+    fn iterator() {
+        let set: SplaySet<_> = vec!["foo", "bar", "baz"].into_iter().collect();
+        assert_eq!(set.iter().cloned().collect::<Vec<_>>(),
+                   ["bar", "baz", "foo"]);
+        assert_eq!((&set).into_iter().cloned().collect::<Vec<_>>(),
+                   ["bar", "baz", "foo"]);
+        assert_eq!(set.into_iter().collect::<Vec<_>>(), ["bar", "baz", "foo"]);
+    }
+
+    #[test]
+    fn find_lower_or_upper_bound() {
+        // small set
+        let mut set: SplaySet<_> = vec!["foo", "bar", "baz"].into_iter().collect();
+        assert_eq!(set.find_lower_bound("aaa"), Some(&"bar"));
+        assert_eq!(set.find_upper_bound("aaa"), Some(&"bar"));
+        assert_eq!(set.find_lower_bound("baz"), Some(&"baz"));
+        assert_eq!(set.find_upper_bound("baz"), Some(&"foo"));
+        assert_eq!(set.find_lower_bound("zzz"), None);
+        assert_eq!(set.find_upper_bound("zzz"), None);
+
+        // large set
+        use rand::{self, Rng};
+        let mut input = (0..1000).into_iter().collect::<Vec<_>>();
+        rand::thread_rng().shuffle(&mut input);
+
+        let mut set: SplaySet<_> = input.into_iter().collect();
+        assert_eq!(set.find_lower_bound(&500), Some(&500));
+        assert_eq!(set.find_upper_bound(&500), Some(&501));
+        assert_eq!(set.find_lower_bound(&999), Some(&999));
+        assert_eq!(set.find_upper_bound(&999), None);
+    }
+
+    #[test]
+    fn remove_and_take() {
+        let mut set = SplaySet::new();
+        set.insert("foo");
+        set.insert("bar");
+        set.insert("baz");
+
+        assert_eq!(set.remove("bar"), true);
+        assert_eq!(set.remove("bar"), false);
+        assert_eq!(set.len(), 2);
+
+        assert_eq!(set.take("foo"), Some("foo"));
+        assert_eq!(set.take("foo"), None);
+        assert_eq!(set.len(), 1);
+    }
+
+    #[test]
+    fn extend() {
+        let mut set = SplaySet::new();
+        set.extend(vec!["foo", "bar"]);
+        set.extend(vec!["bar", "baz"]);
+        assert_eq!(set.into_iter().collect::<Vec<_>>(), ["bar", "baz", "foo"]);
+    }
+
+    #[test]
+    fn hash_eq_ord() {
+        let mut a: SplaySet<_> = vec!["bar", "baz"].into_iter().collect();
+        let mut b: SplaySet<_> = vec!["foo", "bar"].into_iter().collect();
+
+        assert!(hash(&a) != hash(&b));
+        assert!(a != b);
+        assert!(a < b);
+
+        b.insert("baz");
+        assert!(a < b);
+
+        a.insert("foo");
+        assert!(hash(&a) == hash(&b));
+        assert!(a == b);
+    }
+
+    #[test]
+    fn large_set() {
+        use rand::{self, Rng};
+
+        let mut input = (0..1000).into_iter().collect::<Vec<_>>();
+        rand::thread_rng().shuffle(&mut input);
+
+        let mut set: SplaySet<_> = input.into_iter().collect();
+        for i in 0..1000 {
+            assert!(set.remove(&i));
+        }
+        assert!(set.is_empty());
+    }
+
+    #[test]
+    fn set_operations() {
+        let a: SplaySet<_> = vec![1, 2, 3].into_iter().collect();
+        let b: SplaySet<_> = vec![3, 4, 5].into_iter().collect();
+        let c: SplaySet<_> = vec![5, 6, 7].into_iter().collect();
+        let d: SplaySet<_> = vec![1, 2, 3, 4].into_iter().collect();
+
+        assert_eq!(a.difference(&b).cloned().collect::<Vec<_>>(), [1, 2]);
+        assert_eq!((&a - &b).into_iter().collect::<Vec<_>>(), [1, 2]);
+
+        assert_eq!(a.symmetric_difference(&b).cloned().collect::<Vec<_>>(),
+                   [1, 2, 4, 5]);
+        assert_eq!((&a ^ &b).into_iter().collect::<Vec<_>>(), [1, 2, 4, 5]);
+
+        assert_eq!(a.intersection(&b).cloned().collect::<Vec<_>>(), [3]);
+        assert_eq!((&a & &b).into_iter().collect::<Vec<_>>(), [3]);
+
+        assert_eq!(a.union(&b).cloned().collect::<Vec<_>>(), [1, 2, 3, 4, 5]);
+        assert_eq!((&a | &b).into_iter().collect::<Vec<_>>(), [1, 2, 3, 4, 5]);
+
+        assert!(!a.is_disjoint(&a));
+        assert!(!a.is_disjoint(&b));
+        assert!(a.is_disjoint(&c));
+        assert!(!a.is_disjoint(&d));
+
+        assert!(a.is_subset(&a));
+        assert!(!a.is_subset(&b));
+        assert!(!a.is_subset(&c));
+        assert!(a.is_subset(&d));
+
+        assert!(a.is_superset(&a));
+        assert!(!a.is_superset(&b));
+        assert!(!a.is_superset(&c));
+        assert!(!a.is_superset(&d));
+        assert!(d.is_superset(&a));
+        assert!(!d.is_superset(&b));
+        assert!(!d.is_superset(&c));
     }
 }
 

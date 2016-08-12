@@ -1,3 +1,4 @@
+//! Splay tree based data structures
 mod core;
 mod iter;
 pub mod map;

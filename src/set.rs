@@ -31,8 +31,8 @@ use iter;
 /// assert!(set.contains("bar"));
 /// assert!(set.remove("bar"));
 /// assert!(!set.contains("bar"));
-/// // TODO
-/// // assert_eq!(vec!["baz", "foo"], set.into_iter().collect::<Vec<_>>());
+///
+/// assert_eq!(vec!["baz", "foo"], set.into_iter().collect::<Vec<_>>());
 /// ```
 #[derive(Debug,Clone,Hash,PartialEq,Eq,PartialOrd,Ord)]
 pub struct SplaySet<T> {

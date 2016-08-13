@@ -7,7 +7,7 @@ documentation = "http://sile.github.io/rustdocs/splay_tree/splay_tree/"
 homepage = "https://github.com/sile/splay_tree"
 repository = "https://github.com/sile/splay_tree"
 readme = "README.md"
-keywords = ["erlang"]
+keywords = []
 license = "MIT"
 
 [dev-dependencies]

@@ -67,9 +67,9 @@ impl<K, V> Node<K, V>
                                 order = cmp(child.key.borrow());
                             }
                         }
-                        let node_lft: usize = unsafe { mem::transmute(&mut node.lft) };
+                        let node_lft = &mut node.lft as *mut _;
                         *rgt_lftmost = Some(node);
-                        rgt_lftmost = unsafe { mem::transmute(node_lft) };
+                        rgt_lftmost = unsafe { &mut *node_lft };
 
                         node = child;
                     }
@@ -91,9 +91,9 @@ impl<K, V> Node<K, V>
                                 order = cmp(child.key.borrow());
                             }
                         }
-                        let node_rgt: usize = unsafe { mem::transmute(&mut node.rgt) };
+                        let node_rgt = &mut node.rgt as *mut _;
                         *lft_rgtmost = Some(node);
-                        lft_rgtmost = unsafe { mem::transmute(node_rgt) };
+                        lft_rgtmost = unsafe { &mut *node_rgt };
 
                         node = child;
                     }

@@ -32,13 +32,13 @@ impl<T> Iterator for IntoIter<T>
 }
 
 #[derive(Debug,Clone,PartialEq,Eq,PartialOrd)]
-struct Item<T>(T);
+struct Item<T>(T, u64);
 impl<T> Ord for Item<T>
     where T: Ord
 {
     fn cmp(&self, other: &Self) -> cmp::Ordering {
         match self.0.cmp(&other.0) {
-            cmp::Ordering::Equal => cmp::Ordering::Greater,
+            cmp::Ordering::Equal => self.1.cmp(&other.1),
             cmp::Ordering::Less => cmp::Ordering::Greater,
             cmp::Ordering::Greater => cmp::Ordering::Less,
         }
@@ -76,6 +76,7 @@ impl<T> Ord for Item<T>
 #[derive(Debug,Clone)]
 pub struct SplayHeap<T> {
     tree: core::Tree<Item<T>, ()>,
+    seq: u64,
 }
 impl<T> SplayHeap<T>
     where T: Ord
@@ -91,7 +92,10 @@ impl<T> SplayHeap<T>
     /// assert_eq!(heap.pop(), Some(10));
     /// ```
     pub fn new() -> Self {
-        SplayHeap { tree: core::Tree::new() }
+        SplayHeap {
+            tree: core::Tree::new(),
+            seq: 0,
+        }
     }
 
     /// Returns the greatest item in the heap, or `None` if it is empty.
@@ -144,7 +148,9 @@ impl<T> SplayHeap<T>
     /// assert_eq!(heap.peek(), Some(&5));
     /// ```
     pub fn push(&mut self, item: T) {
-        self.tree.insert(Item(item), ());
+        let seq = self.seq;
+        self.seq = seq.wrapping_add(1);
+        self.tree.insert(Item(item, seq), ());
     }
 
     /// Drops all items from the heap.
@@ -189,7 +195,7 @@ impl<T> SplayHeap<T> {
     /// assert_eq!(heap.len(), 2);
     /// ```
     pub fn len(&self) -> usize {
-        self.tree.len
+        self.tree.len()
     }
 
     /// Checkes if the heap is empty.

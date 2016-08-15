@@ -1,5 +1,6 @@
 //! Iterators for splay tree
 use core::Node;
+use core::NodeIndex;
 use core::Tree;
 
 enum Visit<E, N> {
@@ -8,14 +9,18 @@ enum Visit<E, N> {
 }
 
 pub struct Iter<'a, K: 'a, V: 'a> {
-    stack: Vec<Visit<(&'a K, &'a V), &'a Node<K, V>>>,
+    tree: &'a Tree<K, V>,
+    stack: Vec<Visit<(&'a K, &'a V), NodeIndex>>,
 }
 impl<'a, K: 'a, V: 'a> Iter<'a, K, V> {
     pub fn new(tree: &'a Tree<K, V>) -> Self {
-        if let Some(root) = tree.root.as_ref() {
-            Iter { stack: vec![Visit::Node(root)] }
-        } else {
-            Iter { stack: vec![] }
+        Iter {
+            tree: tree,
+            stack: if let Some(root) = tree.root() {
+                vec![Visit::Node(root)]
+            } else {
+                vec![]
+            },
         }
     }
 }
@@ -25,9 +30,10 @@ impl<'a, K: 'a, V: 'a> Iterator for Iter<'a, K, V> {
         while let Some(v) = self.stack.pop() {
             match v {
                 Visit::Node(n) => {
-                    n.rgt.as_ref().map(|rgt| self.stack.push(Visit::Node(rgt)));
+                    let n = self.tree.node_ref(n);
+                    n.rgt().map(|rgt| self.stack.push(Visit::Node(rgt)));
                     self.stack.push(Visit::Elem((&n.key, &n.val)));
-                    n.lft.as_ref().map(|lft| self.stack.push(Visit::Node(lft)));
+                    n.lft().map(|lft| self.stack.push(Visit::Node(lft)));
                 }
                 Visit::Elem(e) => {
                     return Some(e);
@@ -39,45 +45,38 @@ impl<'a, K: 'a, V: 'a> Iterator for Iter<'a, K, V> {
 }
 
 pub struct IntoIter<K, V> {
-    stack: Vec<Visit<(K, V), Node<K, V>>>,
+    tree: Tree<K, V>,
 }
 impl<K, V> IntoIter<K, V> {
     pub fn new(tree: Tree<K, V>) -> Self {
-        if let Some(root) = tree.root {
-            IntoIter { stack: vec![Visit::Node(*root)] }
-        } else {
-            IntoIter { stack: vec![] }
-        }
+        IntoIter { tree: tree }
     }
 }
-impl<K, V> Iterator for IntoIter<K, V> {
+// TODO: Delete Ord
+impl<K, V> Iterator for IntoIter<K, V>
+    where K: Ord
+{
     type Item = (K, V);
     fn next(&mut self) -> Option<Self::Item> {
-        while let Some(v) = self.stack.pop() {
-            match v {
-                Visit::Node(mut n) => {
-                    n.rgt.take().map(|rgt| self.stack.push(Visit::Node(*rgt)));
-                    self.stack.push(Visit::Elem((n.key, n.val)));
-                    n.lft.take().map(|lft| self.stack.push(Visit::Node(*lft)));
-                }
-                Visit::Elem(e) => {
-                    return Some(e);
-                }
-            }
-        }
-        None
+        self.tree.take_lftmost()
     }
 }
 
 pub struct IterMut<'a, K: 'a, V: 'a> {
-    stack: Vec<Visit<(&'a K, &'a mut V), &'a mut Node<K, V>>>,
+    tree: &'a mut Tree<K, V>,
+    // stack: Vec<Visit<(&'a K, &'a mut V), NodeIndex>>,
+    stack: Vec<Visit<*mut Node<K, V>, NodeIndex>>,
 }
 impl<'a, K: 'a, V: 'a> IterMut<'a, K, V> {
     pub fn new(tree: &'a mut Tree<K, V>) -> Self {
-        if let Some(root) = tree.root.as_mut() {
-            IterMut { stack: vec![Visit::Node(root)] }
-        } else {
-            IterMut { stack: vec![] }
+        let root = tree.root();
+        IterMut {
+            tree: tree,
+            stack: if let Some(root) = root {
+                vec![Visit::Node(root)]
+            } else {
+                vec![]
+            },
         }
     }
 }
@@ -87,11 +86,20 @@ impl<'a, K: 'a, V: 'a> Iterator for IterMut<'a, K, V> {
         while let Some(v) = self.stack.pop() {
             match v {
                 Visit::Node(n) => {
-                    n.rgt.as_mut().map(|rgt| self.stack.push(Visit::Node(rgt)));
-                    self.stack.push(Visit::Elem((&n.key, &mut n.val)));
-                    n.lft.as_mut().map(|lft| self.stack.push(Visit::Node(lft)));
+                    let n = self.tree.node_mut(n);
+                    if let Some(rgt) = n.rgt() {
+                        self.stack.push(Visit::Node(rgt));
+                    }
+                    self.stack.push(Visit::Elem(n));
+                    if let Some(lft) = n.lft() {
+                        self.stack.push(Visit::Node(lft));
+                    }
                 }
                 Visit::Elem(e) => {
+                    let e = unsafe {
+                        let e: &mut _ = &mut *e;
+                        (&e.key, &mut e.val)
+                    };
                     return Some(e);
                 }
             }

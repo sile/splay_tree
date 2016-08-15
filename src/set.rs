@@ -115,7 +115,7 @@ impl<T> SplaySet<T>
               Q: Ord
     {
         if self.tree.get(value).is_some() {
-            self.tree.root.as_ref().map(|n| &n.key)
+            self.tree.root_ref().map(|n| &n.key)
         } else {
             None
         }
@@ -393,7 +393,7 @@ impl<T> SplaySet<T> {
     /// assert_eq!(set.len(), 2);
     /// ```
     pub fn len(&self) -> usize {
-        self.tree.len
+        self.tree.len()
     }
 
     /// Returns true if the set contains no elements.
@@ -452,7 +452,9 @@ impl<T> std::iter::FromIterator<T> for SplaySet<T>
         set
     }
 }
-impl<T> IntoIterator for SplaySet<T> {
+impl<T> IntoIterator for SplaySet<T>
+    where T: Ord
+{
     type Item = T;
     type IntoIter = IntoIter<T>;
     fn into_iter(self) -> Self::IntoIter {
@@ -589,7 +591,9 @@ impl<'a, T: 'a> Iterator for Iter<'a, T> {
 
 /// An owning iterator over a SplaySet's items.
 pub struct IntoIter<T>(iter::IntoIter<T, ()>);
-impl<T> Iterator for IntoIter<T> {
+impl<T> Iterator for IntoIter<T>
+    where T: Ord
+{
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
         self.0.next().map(|(e, _)| e)

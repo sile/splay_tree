@@ -284,7 +284,7 @@ impl<K, V> SplayMap<K, V> {
     /// assert_eq!(map.len(), 2);
     /// ```
     pub fn len(&self) -> usize {
-        self.tree.len
+        self.tree.len()
     }
 
     /// Returns true if the map contains no elements.
@@ -304,6 +304,9 @@ impl<K, V> SplayMap<K, V> {
     /// ```
     pub fn is_empty(&self) -> bool {
         self.len() == 0
+    }
+    pub fn capacity(&self) -> usize {
+        self.tree.capacity()
     }
 
     /// Gets an iterator over the entries of the map, sorted by key.
@@ -426,7 +429,9 @@ impl<'a, K, V> IntoIterator for &'a mut SplayMap<K, V>
         IterMut::new(&mut self.tree)
     }
 }
-impl<K, V> IntoIterator for SplayMap<K, V> {
+impl<K, V> IntoIterator for SplayMap<K, V>
+    where K: Ord
+{
     type Item = (K, V);
     type IntoIter = IntoIter<K, V>;
     fn into_iter(self) -> Self::IntoIter {
@@ -487,12 +492,16 @@ impl<'a, K: 'a, V: 'a> Iterator for IterMut<'a, K, V> {
 
 /// An owning iterator over a SplayMap's entries.
 pub struct IntoIter<K, V>(iter::IntoIter<K, V>);
-impl<K, V> IntoIter<K, V> {
+impl<K, V> IntoIter<K, V>
+    where K: Ord
+{
     fn new(tree: core::Tree<K, V>) -> Self {
         IntoIter(iter::IntoIter::new(tree))
     }
 }
-impl<K, V> Iterator for IntoIter<K, V> {
+impl<K, V> Iterator for IntoIter<K, V>
+    where K: Ord
+{
     type Item = (K, V);
     fn next(&mut self) -> Option<Self::Item> {
         self.0.next()
@@ -585,22 +594,22 @@ impl<'a, K: 'a, V: 'a> OccupiedEntry<'a, K, V>
 {
     /// Gets a reference to the key in the entry.
     pub fn key(&self) -> &K {
-        &self.tree.root.as_ref().unwrap().key
+        &self.tree.root_ref().unwrap().key
     }
 
     /// Gets a reference to the value in the entry.
     pub fn get(&self) -> &V {
-        &self.tree.root.as_ref().unwrap().val
+        &self.tree.root_ref().unwrap().val
     }
 
     /// Gets a mutable reference to the value in the entry.
     pub fn get_mut(&mut self) -> &mut V {
-        &mut self.tree.root.as_mut().unwrap().val
+        &mut self.tree.root_mut().unwrap().val
     }
 
     /// Converts the entry into a mutable reference to its value.
     pub fn into_mut(self) -> &'a mut V {
-        &mut self.tree.root.as_mut().unwrap().val
+        &mut self.tree.root_mut().unwrap().val
     }
 
     /// Sets the value of the entry with the OccupiedEntry's key,
@@ -633,6 +642,6 @@ impl<'a, K: 'a, V: 'a> VacantEntry<'a, K, V>
     /// and returns a mutable reference to it.
     pub fn insert(self, value: V) -> &'a mut V {
         self.tree.insert(self.key, value);
-        &mut self.tree.root.as_mut().unwrap().val
+        &mut self.tree.root_mut().unwrap().val
     }
 }

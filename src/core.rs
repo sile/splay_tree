@@ -18,18 +18,10 @@ pub struct Node<K, V> {
 }
 impl<K, V> Node<K, V> {
     pub fn rgt(&self) -> Option<NodeIndex> {
-        if self.rgt == NULL_NODE {
-            None
-        } else {
-            Some(self.rgt)
-        }
+        (self.rgt != NULL_NODE).as_option().map(|_| self.rgt)
     }
     pub fn lft(&self) -> Option<NodeIndex> {
-        if self.lft == NULL_NODE {
-            None
-        } else {
-            Some(self.lft)
-        }
+        (self.lft != NULL_NODE).as_option().map(|_| self.lft)
     }
 }
 impl<K, V> Node<K, V>
@@ -180,9 +172,7 @@ impl<K, V> Tree<K, V>
         where K: Borrow<Q>,
               Q: Ord
     {
-        if self.nodes.is_empty() {
-            None
-        } else {
+        (!self.nodes.is_empty()).as_option().and_then(move |_| {
             let (root, order) = Node::splay(&mut self.nodes, self.root, key);
             self.root = root;
             if let Ordering::Greater = order {
@@ -197,15 +187,13 @@ impl<K, V> Tree<K, V>
             } else {
                 Some(&self.nodes[self.root as usize].key)
             }
-        }
+        })
     }
     pub fn find_upper_bound<Q: ?Sized>(&mut self, key: &Q) -> Option<&K>
         where K: Borrow<Q>,
               Q: Ord
     {
-        if self.nodes.is_empty() {
-            None
-        } else {
+        (!self.nodes.is_empty()).as_option().and_then(move |_| {
             let (root, order) = Node::splay(&mut self.nodes, self.root, key);
             self.root = root;
             if let Ordering::Less = order {
@@ -220,17 +208,13 @@ impl<K, V> Tree<K, V>
                     None
                 }
             }
-        }
+        })
     }
     pub fn get<Q: ?Sized>(&mut self, key: &Q) -> Option<&mut V>
         where K: Borrow<Q>,
               Q: Ord
     {
-        if self.contains_key(key) {
-            Some(&mut self.nodes[self.root as usize].val)
-        } else {
-            None
-        }
+        self.contains_key(key).as_option().map(move |_| &mut self.nodes[self.root as usize].val)
     }
     pub fn insert(&mut self, key: K, value: V) -> Option<V> {
         let (new_root, old_value) = if self.nodes.is_empty() {
@@ -265,46 +249,35 @@ impl<K, V> Tree<K, V>
         where K: Borrow<Q>,
               Q: Ord
     {
-        if self.contains_key(key) {
-            self.pop_root().map(|(_, v)| v)
-        } else {
-            None
-        }
+        self.contains_key(key).as_option().map(|_| self.non_empty_pop_root().1)
     }
     pub fn pop_last(&mut self) -> Option<(K, V)> {
-        if self.nodes.is_empty() {
-            None
-        } else {
+        (!self.nodes.is_empty()).as_option().map(|_| {
             let key = &self.nodes.last().unwrap().key as *const _;
             self.contains_key(unsafe { &*key });
-            self.pop_root()
-        }
+            self.non_empty_pop_root()
+        })
     }
     pub fn pop_root(&mut self) -> Option<(K, V)> {
-        if self.nodes.is_empty() {
-            None
-        } else {
-            let (e, root) = Node::pop(&mut self.nodes, self.root);
-            self.root = root;
-            Some(e)
-        }
+        (!self.nodes.is_empty()).as_option().map(|_| self.non_empty_pop_root())
     }
     pub fn get_lftmost(&mut self) -> Option<(&K, &V)> {
-        if self.nodes.is_empty() {
-            None
-        } else {
+        (!self.nodes.is_empty()).as_option().map(move |_| {
             self.root = Node::splay_lftmost(&mut self.nodes, self.root);
             let n = &self.nodes[self.root as usize];
-            Some((&n.key, &n.val))
-        }
+            (&n.key, &n.val)
+        })
     }
     pub fn take_lftmost(&mut self) -> Option<(K, V)> {
-        if self.nodes.is_empty() {
-            None
-        } else {
+        (!self.nodes.is_empty()).as_option().map(|_| {
             self.root = Node::splay_lftmost(&mut self.nodes, self.root);
-            self.pop_root()
-        }
+            self.non_empty_pop_root()
+        })
+    }
+    fn non_empty_pop_root(&mut self) -> (K, V) {
+        let (e, root) = Node::pop(&mut self.nodes, self.root);
+        self.root = root;
+        e
     }
 }
 impl<K, V> Tree<K, V> {
@@ -312,31 +285,19 @@ impl<K, V> Tree<K, V> {
         iter::Iter::new(self)
     }
     pub fn root(&self) -> Option<NodeIndex> {
-        if self.nodes.is_empty() {
-            None
-        } else {
-            Some(self.root)
-        }
+        (!self.nodes.is_empty()).as_option().map(|_| self.root)
+    }
+    pub fn root_ref(&self) -> Option<&Node<K, V>> {
+        (!self.nodes.is_empty()).as_option().map(|_| &self.nodes[self.root as usize])
+    }
+    pub fn root_mut(&mut self) -> Option<&mut Node<K, V>> {
+        (!self.nodes.is_empty()).as_option().map(move |_| &mut self.nodes[self.root as usize])
     }
     pub fn node_ref(&self, i: NodeIndex) -> &Node<K, V> {
         &self.nodes[i as usize]
     }
     pub fn node_mut(&mut self, i: NodeIndex) -> &mut Node<K, V> {
         &mut self.nodes[i as usize]
-    }
-    pub fn root_ref(&self) -> Option<&Node<K, V>> {
-        if self.nodes.is_empty() {
-            None
-        } else {
-            Some(&self.nodes[self.root as usize])
-        }
-    }
-    pub fn root_mut(&mut self) -> Option<&mut Node<K, V>> {
-        if self.nodes.is_empty() {
-            None
-        } else {
-            Some(&mut self.nodes[self.root as usize])
-        }
     }
     pub fn len(&self) -> usize {
         self.nodes.len()
@@ -412,6 +373,19 @@ impl<K, V> Ord for Tree<K, V>
                     }
                 }
             }
+        }
+    }
+}
+
+trait OptionLike {
+    fn as_option(&self) -> Option<&Self>;
+}
+impl OptionLike for bool {
+    fn as_option(&self) -> Option<&Self> {
+        if *self {
+            Some(self)
+        } else {
+            None
         }
     }
 }

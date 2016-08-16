@@ -73,72 +73,57 @@ impl<K, V> Node<K, V>
     fn splay_lftmost(nodes: &mut [Self], root: NodeIndex) -> NodeIndex {
         Node::splay_by(nodes, root, |_| Ordering::Less).0
     }
-    fn splay_by<F>(nodes: &mut [Self], root: NodeIndex, cmp: F) -> (NodeIndex, Ordering)
+    fn splay_by<F>(nodes: &mut [Self], mut curr: NodeIndex, cmp: F) -> (NodeIndex, Ordering)
         where F: Fn(&K) -> Ordering
     {
-        assert!(root != NULL_NODE);
-        let mut node = root;
+        macro_rules! node{ ($index:expr) => { nodes[$index as usize] } };
         let mut lft_root = NULL_NODE;
         let mut rgt_root = NULL_NODE;
-        let mut order = cmp(nodes[node as usize].key.borrow());
+        let mut order = cmp(node!(curr).key.borrow());
         {
             let mut lft_rgtmost = &mut lft_root;
             let mut rgt_lftmost = &mut rgt_root;
             loop {
+                let mut child;
                 match order {
-                    Ordering::Less if nodes[node as usize].lft != NULL_NODE => {
+                    Ordering::Less if node!(curr).lft != NULL_NODE => {
                         // zig
-                        let mut child = mem::replace(&mut nodes[node as usize].lft, NULL_NODE);
-
-                        order = cmp(nodes[child as usize].key.borrow());
-                        if let Ordering::Less = order {
-                            if nodes[child as usize].lft != NULL_NODE {
-                                // zig-zig
-                                let grand_child = mem::replace(&mut nodes[child as usize].lft,
-                                                               NULL_NODE);
-                                nodes[node as usize].lft = nodes[child as usize].rgt;
-                                nodes[child as usize].rgt = node;
-                                node = child;
-                                child = grand_child;
-                                order = cmp(nodes[child as usize].key.borrow());
-                            }
+                        child = mem::replace(&mut node!(curr).lft, NULL_NODE);
+                        order = cmp(node!(child).key.borrow());
+                        if Ordering::Less == order && node!(child).lft != NULL_NODE {
+                            // zig-zig
+                            let grand_child = mem::replace(&mut node!(child).lft, NULL_NODE);
+                            node!(curr).lft = mem::replace(&mut node!(child).rgt, curr);
+                            curr = mem::replace(&mut child, grand_child);
+                            order = cmp(node!(child).key.borrow());
                         }
-                        *rgt_lftmost = node;
-                        rgt_lftmost = unsafe { &mut *(&mut nodes[node as usize].lft as *mut _) };
-
-                        node = child;
+                        *rgt_lftmost = curr;
+                        rgt_lftmost = unsafe { &mut *(&mut node!(curr).lft as *mut _) };
                     }
-                    Ordering::Greater if nodes[node as usize].rgt != NULL_NODE => {
+                    Ordering::Greater if node!(curr).rgt != NULL_NODE => {
                         // zag
-                        let mut child = mem::replace(&mut nodes[node as usize].rgt, NULL_NODE);
-                        order = cmp(nodes[child as usize].key.borrow());
-                        if let Ordering::Greater = order {
-                            if nodes[child as usize].rgt != NULL_NODE {
-                                // zag-zag
-                                let grand_child = mem::replace(&mut nodes[child as usize].rgt,
-                                                               NULL_NODE);
-                                nodes[node as usize].rgt = nodes[child as usize].lft;
-                                nodes[child as usize].lft = node;
-                                node = child;
-                                child = grand_child;
-                                order = cmp(nodes[child as usize].key.borrow());
-                            }
+                        child = mem::replace(&mut node!(curr).rgt, NULL_NODE);
+                        order = cmp(node!(child).key.borrow());
+                        if Ordering::Greater == order && node!(child).rgt != NULL_NODE {
+                            // zag-zag
+                            let grand_child = mem::replace(&mut node!(child).rgt, NULL_NODE);
+                            node!(curr).rgt = mem::replace(&mut node!(child).lft, curr);
+                            curr = mem::replace(&mut child, grand_child);
+                            order = cmp(node!(child).key.borrow());
                         }
-                        *lft_rgtmost = node;
-                        lft_rgtmost = unsafe { &mut *(&mut nodes[node as usize].rgt as *mut _) };
-
-                        node = child;
+                        *lft_rgtmost = curr;
+                        lft_rgtmost = unsafe { &mut *(&mut node!(curr).rgt as *mut _) };
                     }
                     _ => break,
                 }
+                curr = child;
             }
-            *lft_rgtmost = mem::replace(&mut nodes[node as usize].lft, NULL_NODE);
-            *rgt_lftmost = mem::replace(&mut nodes[node as usize].rgt, NULL_NODE);
+            *lft_rgtmost = mem::replace(&mut node!(curr).lft, NULL_NODE);
+            *rgt_lftmost = mem::replace(&mut node!(curr).rgt, NULL_NODE);
         }
-        nodes[node as usize].lft = lft_root;
-        nodes[node as usize].rgt = rgt_root;
-
-        (node, order)
+        node!(curr).lft = lft_root;
+        node!(curr).rgt = rgt_root;
+        (curr, order)
     }
 }
 
@@ -238,10 +223,7 @@ impl<K, V> Tree<K, V>
                     (self.nodes.len() as NodeIndex - 1, None)
                 }
             }
-
         };
-        assert!(new_root != NULL_NODE);
-
         self.root = new_root;
         old_value
     }

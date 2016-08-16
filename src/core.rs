@@ -271,6 +271,15 @@ impl<K, V> Tree<K, V>
             None
         }
     }
+    pub fn pop_last(&mut self) -> Option<(K, V)> {
+        if self.nodes.is_empty() {
+            None
+        } else {
+            let key = &self.nodes.last().unwrap().key as *const _;
+            self.contains_key(unsafe { &*key });
+            self.pop_root()
+        }
+    }
     pub fn pop_root(&mut self) -> Option<(K, V)> {
         if self.nodes.is_empty() {
             None

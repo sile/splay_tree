@@ -333,6 +333,29 @@ mod set {
         assert!(!d.is_superset(&b));
         assert!(!d.is_superset(&c));
     }
+
+    #[test]
+    fn vec_like() {
+        let mut set = SplaySet::new();
+        {
+            let mut vec = set.as_vec_like();
+            vec.push(10);
+            vec.push(3);
+            vec.push(7);
+            vec.push(8);
+            vec.pop();
+            assert_eq!(vec.get(0), Some(&10));
+            assert_eq!(vec.get(1), Some(&3));
+            assert_eq!(vec.get(2), Some(&7));
+            assert_eq!(vec.get(3), None);
+
+            assert_eq!(vec.find_index(&3), Some(1));
+            assert_eq!(vec.find_index(&300), None);
+
+            assert_eq!(vec.iter().cloned().collect::<Vec<_>>(), [10, 3, 7]);
+        }
+        assert_eq!(set.iter().cloned().collect::<Vec<_>>(), [3, 7, 10]);
+    }
 }
 
 mod heap {

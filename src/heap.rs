@@ -10,7 +10,7 @@ pub struct Iter<'a, T: 'a> {
 }
 impl<'a, T: 'a> Iter<'a, T> {
     fn new(tree: &'a core::Tree<Item<T>, ()>) -> Self {
-        Iter { iter: iter::Iter::new(tree) }
+        Iter { iter: tree.iter() }
     }
 }
 impl<'a, T: 'a> Iterator for Iter<'a, T> {
@@ -21,13 +21,11 @@ impl<'a, T: 'a> Iterator for Iter<'a, T> {
 }
 
 /// An iterator that moves out of a `SplayHeap`.
-pub struct IntoIter<T>(SplayHeap<T>);
-impl<T> Iterator for IntoIter<T>
-    where T: Ord
-{
+pub struct IntoIter<T>(iter::IntoIter<Item<T>, ()>);
+impl<T> Iterator for IntoIter<T> {
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
-        self.0.pop()
+        self.0.next().map(|(k, _)| k.0)
     }
 }
 
@@ -237,18 +235,14 @@ impl<T> std::iter::FromIterator<T> for SplayHeap<T>
         heap
     }
 }
-impl<T> IntoIterator for SplayHeap<T>
-    where T: Ord
-{
+impl<T> IntoIterator for SplayHeap<T> {
     type Item = T;
     type IntoIter = IntoIter<T>;
     fn into_iter(self) -> Self::IntoIter {
-        IntoIter(self)
+        IntoIter(self.tree.into_iter())
     }
 }
-impl<'a, T> IntoIterator for &'a SplayHeap<T>
-    where T: Ord
-{
+impl<'a, T> IntoIterator for &'a SplayHeap<T> {
     type Item = &'a T;
     type IntoIter = Iter<'a, T>;
     fn into_iter(self) -> Self::IntoIter {

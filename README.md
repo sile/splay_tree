@@ -3,7 +3,7 @@ splay_tree
 
 [![](http://meritbadge.herokuapp.com/splay_tree)](https://crates.io/crates/splay_tree)
 
-`splay_tree` provides data structures such as map, set and heap which are based on a top-down splay tree.
+`splay_tree` provides data structures such as map, set and heap which are based on an in-place top-down splay tree.
 
 > A splay tree is a self-adjusting binary search tree with
 > the additional property that recently accessed elements are quick to access again.

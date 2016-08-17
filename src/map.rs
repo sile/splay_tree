@@ -305,9 +305,6 @@ impl<K, V> SplayMap<K, V> {
     pub fn is_empty(&self) -> bool {
         self.len() == 0
     }
-    pub fn capacity(&self) -> usize {
-        self.tree.capacity()
-    }
 
     /// Gets an iterator over the entries of the map, sorted by key.
     ///
@@ -429,9 +426,7 @@ impl<'a, K, V> IntoIterator for &'a mut SplayMap<K, V>
         IterMut::new(&mut self.tree)
     }
 }
-impl<K, V> IntoIterator for SplayMap<K, V>
-    where K: Ord
-{
+impl<K, V> IntoIterator for SplayMap<K, V> {
     type Item = (K, V);
     type IntoIter = IntoIter<K, V>;
     fn into_iter(self) -> Self::IntoIter {
@@ -466,7 +461,7 @@ impl<'a, K, V> Extend<(&'a K, &'a V)> for SplayMap<K, V>
 pub struct Iter<'a, K: 'a, V: 'a>(iter::Iter<'a, K, V>);
 impl<'a, K: 'a, V: 'a> Iter<'a, K, V> {
     fn new(tree: &'a core::Tree<K, V>) -> Self {
-        Iter(iter::Iter::new(tree))
+        Iter(tree.iter())
     }
 }
 impl<'a, K: 'a, V: 'a> Iterator for Iter<'a, K, V> {
@@ -480,7 +475,7 @@ impl<'a, K: 'a, V: 'a> Iterator for Iter<'a, K, V> {
 pub struct IterMut<'a, K: 'a, V: 'a>(iter::IterMut<'a, K, V>);
 impl<'a, K: 'a, V: 'a> IterMut<'a, K, V> {
     fn new(tree: &'a mut core::Tree<K, V>) -> Self {
-        IterMut(iter::IterMut::new(tree))
+        IterMut(tree.iter_mut())
     }
 }
 impl<'a, K: 'a, V: 'a> Iterator for IterMut<'a, K, V> {
@@ -492,16 +487,12 @@ impl<'a, K: 'a, V: 'a> Iterator for IterMut<'a, K, V> {
 
 /// An owning iterator over a SplayMap's entries.
 pub struct IntoIter<K, V>(iter::IntoIter<K, V>);
-impl<K, V> IntoIter<K, V>
-    where K: Ord
-{
+impl<K, V> IntoIter<K, V> {
     fn new(tree: core::Tree<K, V>) -> Self {
-        IntoIter(iter::IntoIter::new(tree))
+        IntoIter(tree.into_iter())
     }
 }
-impl<K, V> Iterator for IntoIter<K, V>
-    where K: Ord
-{
+impl<K, V> Iterator for IntoIter<K, V> {
     type Item = (K, V);
     fn next(&mut self) -> Option<Self::Item> {
         self.0.next()
@@ -552,7 +543,9 @@ impl<'a, K: 'a, V: 'a> Iterator for ValuesMut<'a, K, V> {
 
 /// A view into a single entry in a map, which may either be vacant or occupied.
 pub enum Entry<'a, K: 'a, V: 'a> {
+    /// An occupied entry
     Occupied(OccupiedEntry<'a, K, V>),
+    /// A vacant entry
     Vacant(VacantEntry<'a, K, V>),
 }
 impl<'a, K: 'a, V: 'a> Entry<'a, K, V>
@@ -594,22 +587,22 @@ impl<'a, K: 'a, V: 'a> OccupiedEntry<'a, K, V>
 {
     /// Gets a reference to the key in the entry.
     pub fn key(&self) -> &K {
-        &self.tree.root_ref().unwrap().key
+        &self.tree.root_ref().key
     }
 
     /// Gets a reference to the value in the entry.
     pub fn get(&self) -> &V {
-        &self.tree.root_ref().unwrap().val
+        &self.tree.root_ref().val
     }
 
     /// Gets a mutable reference to the value in the entry.
     pub fn get_mut(&mut self) -> &mut V {
-        &mut self.tree.root_mut().unwrap().val
+        &mut self.tree.root_mut().val
     }
 
     /// Converts the entry into a mutable reference to its value.
     pub fn into_mut(self) -> &'a mut V {
-        &mut self.tree.root_mut().unwrap().val
+        &mut self.tree.root_mut().val
     }
 
     /// Sets the value of the entry with the OccupiedEntry's key,
@@ -642,6 +635,6 @@ impl<'a, K: 'a, V: 'a> VacantEntry<'a, K, V>
     /// and returns a mutable reference to it.
     pub fn insert(self, value: V) -> &'a mut V {
         self.tree.insert(self.key, value);
-        &mut self.tree.root_mut().unwrap().val
+        &mut self.tree.root_mut().val
     }
 }

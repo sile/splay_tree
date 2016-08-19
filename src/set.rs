@@ -408,30 +408,6 @@ impl<T> SplaySet<T>
     pub fn as_vec_like_mut(&mut self) -> VecLikeMut<T> {
         VecLikeMut::new(&mut self.tree)
     }
-
-    /// Returns a vector like view of the set.
-    ///
-    /// # Examples
-    /// ```
-    /// use splay_tree::SplaySet;
-    ///
-    /// let mut set = SplaySet::new();
-    /// set.insert("foo");
-    /// set.insert("bar");
-    /// {
-    ///     let mut vec = set.as_vec_like();
-    ///     assert_eq!(vec.get(0), Some(&"foo"));
-    ///     assert_eq!(vec.get(1), Some(&"bar"));
-    ///
-    ///     assert_eq!(vec.iter().cloned().collect::<Vec<_>>(),
-    ///                ["foo", "bar"]);
-    /// }
-    /// assert_eq!(set.iter().cloned().collect::<Vec<_>>(),
-    ///            ["bar", "foo"]);
-    /// ```
-    pub fn as_vec_like(&self) -> VecLike<T> {
-        VecLike::new(&self.tree)
-    }
 }
 impl<T> SplaySet<T> {
     /// Returns the number of elements in the set.
@@ -483,6 +459,30 @@ impl<T> SplaySet<T> {
     /// ```
     pub fn iter(&self) -> Iter<T> {
         Iter::new(self)
+    }
+
+    /// Returns a vector like view of the set.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplaySet;
+    ///
+    /// let mut set = SplaySet::new();
+    /// set.insert("foo");
+    /// set.insert("bar");
+    /// {
+    ///     let mut vec = set.as_vec_like();
+    ///     assert_eq!(vec.get(0), Some(&"foo"));
+    ///     assert_eq!(vec.get(1), Some(&"bar"));
+    ///
+    ///     assert_eq!(vec.iter().cloned().collect::<Vec<_>>(),
+    ///                ["foo", "bar"]);
+    /// }
+    /// assert_eq!(set.iter().cloned().collect::<Vec<_>>(),
+    ///            ["bar", "foo"]);
+    /// ```
+    pub fn as_vec_like(&self) -> VecLike<T> {
+        VecLike::new(&self.tree)
     }
 }
 impl<T> Default for SplaySet<T>

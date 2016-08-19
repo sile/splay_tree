@@ -338,7 +338,7 @@ mod set {
     fn vec_like() {
         let mut set = SplaySet::new();
         {
-            let mut vec = set.as_vec_like();
+            let mut vec = set.as_vec_like_mut();
             vec.push(10);
             vec.push(3);
             vec.push(7);

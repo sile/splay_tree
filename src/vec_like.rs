@@ -3,14 +3,40 @@ use std::borrow::Borrow;
 use core;
 
 pub struct VecLike<'a, K: 'a, V: 'a> {
-    tree: &'a mut core::Tree<K, V>,
+    tree: &'a core::Tree<K, V>,
 }
-impl<'a, K: 'a, V: 'a> VecLike<'a, K, V>
-    where K: Ord
-{
-    pub fn new(tree: &'a mut core::Tree<K, V>) -> Self {
+impl<'a, K: 'a, V: 'a> VecLike<'a, K, V> {
+    pub fn new(tree: &'a core::Tree<K, V>) -> Self {
         VecLike { tree: tree }
     }
+    pub fn len(&self) -> usize {
+        self.tree.len()
+    }
+    pub fn get(&self, index: usize) -> Option<(&K, &V)> {
+        if index < self.tree.len() {
+            Some(self.tree.node_ref(index as core::NodeIndex).into())
+        } else {
+            None
+        }
+    }
+    pub fn first(&self) -> Option<(&K, &V)> {
+        self.get(0)
+    }
+    pub fn last(&self) -> Option<(&K, &V)> {
+        let last = self.tree.len().wrapping_sub(1);
+        self.get(last)
+    }
+    pub fn iter(&self) -> Iter<K, V> {
+        Iter(self.tree.nodes_iter())
+    }
+}
+
+pub struct VecLikeMut<'a, K: 'a, V: 'a> {
+    tree: &'a mut core::Tree<K, V>,
+}
+impl<'a, K: 'a, V: 'a> VecLikeMut<'a, K, V>
+    where K: Ord
+{
     pub fn push(&mut self, key: K, value: V) -> bool {
         if self.tree.contains_key(&key) {
             false
@@ -33,7 +59,10 @@ impl<'a, K: 'a, V: 'a> VecLike<'a, K, V>
         }
     }
 }
-impl<'a, K: 'a, V: 'a> VecLike<'a, K, V> {
+impl<'a, K: 'a, V: 'a> VecLikeMut<'a, K, V> {
+    pub fn new(tree: &'a mut core::Tree<K, V>) -> Self {
+        VecLikeMut { tree: tree }
+    }
     pub fn len(&self) -> usize {
         self.tree.len()
     }

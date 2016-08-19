@@ -381,7 +381,7 @@ impl<T> SplaySet<T>
         other.is_subset(self)
     }
 
-    /// Returns a vector like view of the set.
+    /// Returns a vector like mutable view of the set.
     ///
     /// # Examples
     /// ```
@@ -391,7 +391,7 @@ impl<T> SplaySet<T>
     /// set.insert("foo");
     /// set.insert("bar");
     /// {
-    ///     let mut vec = set.as_vec_like();
+    ///     let mut vec = set.as_vec_like_mut();
     ///     vec.push("baz");
     ///
     ///     assert_eq!(vec.get(0), Some(&"foo"));
@@ -405,8 +405,32 @@ impl<T> SplaySet<T>
     /// assert_eq!(set.iter().cloned().collect::<Vec<_>>(),
     ///            ["bar", "baz", "foo"]);
     /// ```
-    pub fn as_vec_like(&mut self) -> VecLike<T> {
-        VecLike::new(&mut self.tree)
+    pub fn as_vec_like_mut(&mut self) -> VecLikeMut<T> {
+        VecLikeMut::new(&mut self.tree)
+    }
+
+    /// Returns a vector like view of the set.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplaySet;
+    ///
+    /// let mut set = SplaySet::new();
+    /// set.insert("foo");
+    /// set.insert("bar");
+    /// {
+    ///     let mut vec = set.as_vec_like();
+    ///     assert_eq!(vec.get(0), Some(&"foo"));
+    ///     assert_eq!(vec.get(1), Some(&"bar"));
+    ///
+    ///     assert_eq!(vec.iter().cloned().collect::<Vec<_>>(),
+    ///                ["foo", "bar"]);
+    /// }
+    /// assert_eq!(set.iter().cloned().collect::<Vec<_>>(),
+    ///            ["bar", "foo"]);
+    /// ```
+    pub fn as_vec_like(&self) -> VecLike<T> {
+        VecLike::new(&self.tree)
     }
 }
 impl<T> SplaySet<T> {
@@ -730,94 +754,11 @@ impl<'a, T: 'a> Iterator for Union<'a, T>
 pub struct VecLike<'a, T: 'a> {
     inner: vec_like::VecLike<'a, T, ()>,
 }
-impl<'a, T: 'a> VecLike<'a, T>
-    where T: Ord
-{
-    fn new(tree: &'a mut core::Tree<T, ()>) -> Self {
+impl<'a, T: 'a> VecLike<'a, T> {
+    fn new(tree: &'a core::Tree<T, ()>) -> Self {
         VecLike { inner: vec_like::VecLike::new(tree) }
     }
 
-    /// Appends a new element to the back of the vector like set.
-    ///
-    /// If the set did not have this value present, `true` is returnd.
-    ///
-    /// If the set did have this value present, `false` is returnd,
-    /// and the entry is not appended.
-    ///
-    /// This is a synonym of the `SplaySet::insert` function.
-    ///
-    /// # Examples
-    /// ```
-    /// use splay_tree::SplaySet;
-    ///
-    /// let mut set = SplaySet::new();
-    /// let mut vec = set.as_vec_like();
-    ///
-    /// assert_eq!(vec.push("foo"), true);
-    /// assert_eq!(vec.len(), 1);
-    ///
-    /// assert_eq!(vec.push("foo"), false);
-    /// assert_eq!(vec.len(), 1);
-    ///
-    /// assert_eq!(vec.push("bar"), true);
-    /// assert_eq!(vec.len(), 2);
-    ///
-    /// assert_eq!(vec.find_index("foo"), Some(0));
-    /// assert_eq!(vec.get(0), Some(&"foo"));
-    /// ```
-    pub fn push(&mut self, value: T) -> bool {
-        self.inner.push(value, ())
-    }
-
-    /// Removes the last element from the vector like set and returns it, or `None` if it is empty.
-    ///
-    /// # Examples
-    /// ```
-    /// use splay_tree::SplaySet;
-    ///
-    /// let mut set = SplaySet::new();
-    /// set.insert("foo");
-    /// set.insert("bar");
-    /// {
-    ///     let mut vec = set.as_vec_like();
-    ///     assert_eq!(vec.pop(), Some("bar"));
-    ///     assert_eq!(vec.pop(), Some("foo"));
-    ///     assert_eq!(vec.pop(), None);
-    /// }
-    /// assert!(set.is_empty());
-    /// ```
-    pub fn pop(&mut self) -> Option<T> {
-        self.inner.pop().map(|(v, _)| v)
-    }
-
-    /// Returns the index of the element that is equal to the given value,
-    /// or `None` if the collection does not have no such element.
-    ///
-    /// Because underlying `SplaySet` is a self-adjusting amortized data structure,
-    /// this function requires the `mut` qualifier for `self`.
-    ///
-    /// # Examples
-    /// ```
-    /// use splay_tree::SplaySet;
-    ///
-    /// let mut set = SplaySet::new();
-    /// set.insert("foo");
-    /// set.insert("bar");
-    /// set.insert("baz");
-    ///
-    /// let mut vec = set.as_vec_like();
-    /// assert_eq!(vec.find_index("foo"), Some(0));
-    /// assert_eq!(vec.find_index("baz"), Some(2));
-    /// assert_eq!(vec.find_index("qux"), None);
-    /// ```
-    pub fn find_index<Q: ?Sized>(&mut self, value: &Q) -> Option<usize>
-        where T: Borrow<Q>,
-              Q: Ord
-    {
-        self.inner.find_index(value)
-    }
-}
-impl<'a, T: 'a> VecLike<'a, T> {
     /// Returns the element of the vector at the given index,
     /// or `None` if the index is out of bounds.
     ///
@@ -905,7 +846,209 @@ impl<'a, T: 'a> VecLike<'a, T> {
     /// let mut set = SplaySet::new();
     /// set.insert("foo");
     /// {
-    ///     let mut vec = set.as_vec_like();
+    ///     let vec = set.as_vec_like();
+    ///     assert_eq!(vec.len(), 1);
+    /// }
+    /// ```
+    pub fn len(&self) -> usize {
+        self.inner.len()
+    }
+
+    /// Returns `true` if the vector like set contains no elements.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplaySet;
+    ///
+    /// let set = SplaySet::<usize>::new();
+    /// let vec = set.as_vec_like();
+    /// assert!(vec.is_empty());
+    /// ```
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+}
+
+/// A vector like mutable view of a set.
+pub struct VecLikeMut<'a, T: 'a> {
+    inner: vec_like::VecLikeMut<'a, T, ()>,
+}
+impl<'a, T: 'a> VecLikeMut<'a, T>
+    where T: Ord
+{
+    /// Appends a new element to the back of the vector like set.
+    ///
+    /// If the set did not have this value present, `true` is returnd.
+    ///
+    /// If the set did have this value present, `false` is returnd,
+    /// and the entry is not appended.
+    ///
+    /// This is a synonym of the `SplaySet::insert` function.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplaySet;
+    ///
+    /// let mut set = SplaySet::new();
+    /// let mut vec = set.as_vec_like_mut();
+    ///
+    /// assert_eq!(vec.push("foo"), true);
+    /// assert_eq!(vec.len(), 1);
+    ///
+    /// assert_eq!(vec.push("foo"), false);
+    /// assert_eq!(vec.len(), 1);
+    ///
+    /// assert_eq!(vec.push("bar"), true);
+    /// assert_eq!(vec.len(), 2);
+    ///
+    /// assert_eq!(vec.find_index("foo"), Some(0));
+    /// assert_eq!(vec.get(0), Some(&"foo"));
+    /// ```
+    pub fn push(&mut self, value: T) -> bool {
+        self.inner.push(value, ())
+    }
+
+    /// Removes the last element from the vector like set and returns it, or `None` if it is empty.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplaySet;
+    ///
+    /// let mut set = SplaySet::new();
+    /// set.insert("foo");
+    /// set.insert("bar");
+    /// {
+    ///     let mut vec = set.as_vec_like_mut();
+    ///     assert_eq!(vec.pop(), Some("bar"));
+    ///     assert_eq!(vec.pop(), Some("foo"));
+    ///     assert_eq!(vec.pop(), None);
+    /// }
+    /// assert!(set.is_empty());
+    /// ```
+    pub fn pop(&mut self) -> Option<T> {
+        self.inner.pop().map(|(v, _)| v)
+    }
+
+    /// Returns the index of the element that is equal to the given value,
+    /// or `None` if the collection does not have no such element.
+    ///
+    /// Because underlying `SplaySet` is a self-adjusting amortized data structure,
+    /// this function requires the `mut` qualifier for `self`.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplaySet;
+    ///
+    /// let mut set = SplaySet::new();
+    /// set.insert("foo");
+    /// set.insert("bar");
+    /// set.insert("baz");
+    ///
+    /// let mut vec = set.as_vec_like_mut();
+    /// assert_eq!(vec.find_index("foo"), Some(0));
+    /// assert_eq!(vec.find_index("baz"), Some(2));
+    /// assert_eq!(vec.find_index("qux"), None);
+    /// ```
+    pub fn find_index<Q: ?Sized>(&mut self, value: &Q) -> Option<usize>
+        where T: Borrow<Q>,
+              Q: Ord
+    {
+        self.inner.find_index(value)
+    }
+}
+impl<'a, T: 'a> VecLikeMut<'a, T> {
+    fn new(tree: &'a mut core::Tree<T, ()>) -> Self {
+        VecLikeMut { inner: vec_like::VecLikeMut::new(tree) }
+    }
+
+    /// Returns the element of the vector at the given index,
+    /// or `None` if the index is out of bounds.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplaySet;
+    ///
+    /// let mut set = SplaySet::new();
+    /// set.insert("foo");
+    /// set.insert("bar");
+    /// set.insert("baz");
+    ///
+    /// let vec = set.as_vec_like_mut();
+    /// assert_eq!(vec.get(0), Some(&"foo"));
+    /// assert_eq!(vec.get(1), Some(&"bar"));
+    /// assert_eq!(vec.get(2), Some(&"baz"));
+    /// assert_eq!(vec.get(3), None);
+    /// ```
+    pub fn get(&self, index: usize) -> Option<&T> {
+        self.inner.get(index).map(|(v, _)| v)
+    }
+
+    /// Returns the first element of the vector, or `None` if it is empty.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplaySet;
+    ///
+    /// let mut set = SplaySet::new();
+    /// set.insert("foo");
+    /// set.insert("bar");
+    /// set.insert("baz");
+    ///
+    /// let vec = set.as_vec_like_mut();
+    /// assert_eq!(vec.first(), Some(&"foo"));
+    /// ```
+    pub fn first(&self) -> Option<&T> {
+        self.inner.first().map(|(v, _)| v)
+    }
+
+    /// Returns the last element of the vector, or `None` if it is empty.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplaySet;
+    ///
+    /// let mut set = SplaySet::new();
+    /// set.insert("foo");
+    /// set.insert("bar");
+    /// set.insert("baz");
+    ///
+    /// let vec = set.as_vec_like_mut();
+    /// assert_eq!(vec.last(), Some(&"baz"));
+    /// ```
+    pub fn last(&self) -> Option<&T> {
+        self.inner.last().map(|(v, _)| v)
+    }
+
+    /// Gets an iterator over the vector's elements, in positional order (low to high).
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplaySet;
+    ///
+    /// let mut set = SplaySet::new();
+    /// set.insert("foo");
+    /// set.insert("bar");
+    /// set.insert("baz");
+    ///
+    /// assert_eq!(set.iter().cloned().collect::<Vec<_>>(), ["bar", "baz", "foo"]);
+    ///
+    /// let vec = set.as_vec_like_mut();
+    /// assert_eq!(vec.iter().cloned().collect::<Vec<_>>(), ["foo", "bar", "baz"]);
+    /// ```
+    pub fn iter(&self) -> VecLikeIter<T> {
+        VecLikeIter(self.inner.iter())
+    }
+
+    /// Returns the number of elements in the vector like set.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplaySet;
+    ///
+    /// let mut set = SplaySet::new();
+    /// set.insert("foo");
+    /// {
+    ///     let mut vec = set.as_vec_like_mut();
     ///     vec.push("bar");
     ///     assert_eq!(vec.len(), 2);
     /// }
@@ -923,7 +1066,7 @@ impl<'a, T: 'a> VecLike<'a, T> {
     ///
     /// let mut set = SplaySet::new();
     ///
-    /// let mut vec = set.as_vec_like();
+    /// let mut vec = set.as_vec_like_mut();
     /// assert!(vec.is_empty());
     ///
     /// vec.push(0);

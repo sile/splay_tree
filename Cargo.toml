@@ -1,6 +1,6 @@
 [package]
 name = "splay_tree"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["Takeru Ohta <phjgt308@gmail.com>"]
 description = "Splay Tree based Data Structures (map, set, heap)"
 documentation = "http://sile.github.io/rustdocs/splay_tree/splay_tree/"

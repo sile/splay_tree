@@ -2,6 +2,7 @@ use std::slice;
 use std::borrow::Borrow;
 use core;
 
+#[derive(Debug, Clone)]
 pub struct VecLike<'a, K: 'a, V: 'a> {
     tree: &'a core::Tree<K, V>,
 }
@@ -31,6 +32,7 @@ impl<'a, K: 'a, V: 'a> VecLike<'a, K, V> {
     }
 }
 
+#[derive(Debug)]
 pub struct VecLikeMut<'a, K: 'a, V: 'a> {
     tree: &'a mut core::Tree<K, V>,
 }

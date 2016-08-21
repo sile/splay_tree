@@ -751,6 +751,7 @@ impl<'a, T: 'a> Iterator for Union<'a, T>
 }
 
 /// A vector like view of a set.
+#[derive(Debug, Clone)]
 pub struct VecLike<'a, T: 'a> {
     inner: vec_like::VecLike<'a, T, ()>,
 }
@@ -870,6 +871,7 @@ impl<'a, T: 'a> VecLike<'a, T> {
 }
 
 /// A vector like mutable view of a set.
+#[derive(Debug)]
 pub struct VecLikeMut<'a, T: 'a> {
     inner: vec_like::VecLikeMut<'a, T, ()>,
 }

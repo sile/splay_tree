@@ -179,57 +179,66 @@ impl<K, V> Tree<K, V>
     fn splay_lftmost(&mut self, root: NodeIndex) -> NodeIndex {
         self.splay_by(root, |_| Ordering::Less).0
     }
-    fn splay_by<F>(&mut self, mut curr: NodeIndex, cmp: F) -> (NodeIndex, Ordering)
+    fn splay_by<F>(&mut self, mut curr_idx: NodeIndex, cmp: F) -> (NodeIndex, Ordering)
         where F: Fn(&K) -> Ordering
     {
         use std::mem::replace;
-        let mut lft_root = NULL_NODE;
-        let mut rgt_root = NULL_NODE;
-        let mut order = cmp(self.node_ref(curr).key.borrow());
+        let mut lft_root_idx = NULL_NODE;
+        let mut rgt_root_idx = NULL_NODE;
+        let mut curr_mut = unsafe { self.aliasable_node_mut(curr_idx) };
+        let mut order = cmp(curr_mut.key.borrow());
         {
-            let mut lft_rgtmost = &mut lft_root;
-            let mut rgt_lftmost = &mut rgt_root;
+            let mut lft_rgtmost_idx = &mut lft_root_idx;
+            let mut rgt_lftmost_idx = &mut rgt_root_idx;
             loop {
-                let mut child;
+                let mut child_idx;
+                let mut child_mut;
                 match order {
-                    Ordering::Less if self.node_ref(curr).lft != NULL_NODE => {
+                    Ordering::Less if curr_mut.lft != NULL_NODE => {
                         // zig
-                        child = replace(&mut self.node_mut(curr).lft, NULL_NODE);
-                        order = cmp(self.node_ref(child).key.borrow());
-                        if Ordering::Less == order && self.node_ref(child).lft != NULL_NODE {
+                        child_idx = replace(&mut curr_mut.lft, NULL_NODE);
+                        child_mut = unsafe { self.aliasable_node_mut(child_idx) };
+                        order = cmp(child_mut.key.borrow());
+                        if Ordering::Less == order && child_mut.lft != NULL_NODE {
                             // zig-zig
-                            let grand_child = replace(&mut self.node_mut(child).lft, NULL_NODE);
-                            self.node_mut(curr).lft = replace(&mut self.node_mut(child).rgt, curr);
-                            curr = replace(&mut child, grand_child);
-                            order = cmp(self.node_ref(child).key.borrow());
+                            let grand_child_idx = replace(&mut child_mut.lft, NULL_NODE);
+                            curr_mut.lft = replace(&mut child_mut.rgt, curr_idx);
+                            curr_idx = replace(&mut child_idx, grand_child_idx);
+                            curr_mut = replace(&mut child_mut,
+                                               unsafe { self.aliasable_node_mut(grand_child_idx) });
+                            order = cmp(child_mut.key.borrow());
                         }
-                        *rgt_lftmost = curr;
-                        rgt_lftmost = unsafe { &mut *(&mut self.node_mut(curr).lft as *mut _) };
+                        *rgt_lftmost_idx = curr_idx;
+                        rgt_lftmost_idx = unsafe { &mut *(&mut curr_mut.lft as *mut _) };
                     }
-                    Ordering::Greater if self.node_ref(curr).rgt != NULL_NODE => {
+                    Ordering::Greater if curr_mut.rgt != NULL_NODE => {
                         // zag
-                        child = replace(&mut self.node_mut(curr).rgt, NULL_NODE);
-                        order = cmp(self.node_ref(child).key.borrow());
-                        if Ordering::Greater == order && self.node_ref(child).rgt != NULL_NODE {
+                        child_idx = replace(&mut curr_mut.rgt, NULL_NODE);
+                        child_mut = unsafe { self.aliasable_node_mut(child_idx) };
+                        order = cmp(child_mut.key.borrow());
+                        if Ordering::Greater == order && child_mut.rgt != NULL_NODE {
                             // zag-zag
-                            let grand_child = replace(&mut self.node_mut(child).rgt, NULL_NODE);
-                            self.node_mut(curr).rgt = replace(&mut self.node_mut(child).lft, curr);
-                            curr = replace(&mut child, grand_child);
-                            order = cmp(self.node_ref(child).key.borrow());
+                            let grand_child_idx = replace(&mut child_mut.rgt, NULL_NODE);
+                            curr_mut.rgt = replace(&mut child_mut.lft, curr_idx);
+                            curr_idx = replace(&mut child_idx, grand_child_idx);
+                            curr_mut = replace(&mut child_mut,
+                                               unsafe { self.aliasable_node_mut(grand_child_idx) });
+                            order = cmp(child_mut.key.borrow());
                         }
-                        *lft_rgtmost = curr;
-                        lft_rgtmost = unsafe { &mut *(&mut self.node_mut(curr).rgt as *mut _) };
+                        *lft_rgtmost_idx = curr_idx;
+                        lft_rgtmost_idx = unsafe { &mut *(&mut curr_mut.rgt as *mut _) };
                     }
                     _ => break,
                 }
-                curr = child;
+                curr_mut = child_mut;
+                curr_idx = child_idx;
             }
-            *lft_rgtmost = replace(&mut self.node_mut(curr).lft, NULL_NODE);
-            *rgt_lftmost = replace(&mut self.node_mut(curr).rgt, NULL_NODE);
+            *lft_rgtmost_idx = replace(&mut curr_mut.lft, NULL_NODE);
+            *rgt_lftmost_idx = replace(&mut curr_mut.rgt, NULL_NODE);
         }
-        self.node_mut(curr).lft = lft_root;
-        self.node_mut(curr).rgt = rgt_root;
-        (curr, order)
+        curr_mut.lft = lft_root_idx;
+        curr_mut.rgt = rgt_root_idx;
+        (curr_idx, order)
     }
     fn non_empty_pop_root(&mut self) -> (K, V) {
         let new_root = match *self.root_ref() {
@@ -300,6 +309,9 @@ impl<K, V> Tree<K, V> {
     }
     pub fn node_mut(&mut self, i: NodeIndex) -> &mut Node<K, V> {
         unsafe { self.nodes.get_unchecked_mut(i as usize) }
+    }
+    unsafe fn aliasable_node_mut<'a, 'b>(&'a self, i: NodeIndex) -> &'b mut Node<K, V> {
+        &mut *(self.node_ref(i) as *const _ as *mut _)
     }
     pub fn len(&self) -> usize {
         self.nodes.len()

@@ -299,10 +299,12 @@ impl<K, V> Tree<K, V> {
         }
     }
     pub fn root_ref(&self) -> &Node<K, V> {
-        unsafe { self.nodes.get_unchecked(self.root as usize) }
+        let root = self.root;
+        self.node_ref(root)
     }
     pub fn root_mut(&mut self) -> &mut Node<K, V> {
-        unsafe { self.nodes.get_unchecked_mut(self.root as usize) }
+        let root = self.root;
+        self.node_mut(root)
     }
     pub fn node_ref(&self, i: NodeIndex) -> &Node<K, V> {
         unsafe { self.nodes.get_unchecked(i as usize) }
@@ -310,8 +312,8 @@ impl<K, V> Tree<K, V> {
     pub fn node_mut(&mut self, i: NodeIndex) -> &mut Node<K, V> {
         unsafe { self.nodes.get_unchecked_mut(i as usize) }
     }
-    unsafe fn aliasable_node_mut<'a, 'b>(&'a self, i: NodeIndex) -> &'b mut Node<K, V> {
-        &mut *(self.node_ref(i) as *const _ as *mut _)
+    unsafe fn aliasable_node_mut<'a, 'b>(&'a mut self, i: NodeIndex) -> &'b mut Node<K, V> {
+        &mut *(self.node_mut(i) as *mut _)
     }
     pub fn len(&self) -> usize {
         self.nodes.len()

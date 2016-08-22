@@ -13,21 +13,21 @@ impl<'a, K: 'a, V: 'a> VecLike<'a, K, V> {
     pub fn len(&self) -> usize {
         self.tree.len()
     }
-    pub fn get(&self, index: usize) -> Option<(&K, &V)> {
+    pub fn get(&self, index: usize) -> Option<(&'a K, &'a V)> {
         if index < self.tree.len() {
             Some(self.tree.node_ref(index as core::NodeIndex).into())
         } else {
             None
         }
     }
-    pub fn first(&self) -> Option<(&K, &V)> {
+    pub fn first(&self) -> Option<(&'a K, &'a V)> {
         self.get(0)
     }
-    pub fn last(&self) -> Option<(&K, &V)> {
+    pub fn last(&self) -> Option<(&'a K, &'a V)> {
         let last = self.tree.len().wrapping_sub(1);
         self.get(last)
     }
-    pub fn iter(&self) -> Iter<K, V> {
+    pub fn iter(&self) -> Iter<'a, K, V> {
         Iter(self.tree.nodes_iter())
     }
 }

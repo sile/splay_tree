@@ -778,7 +778,7 @@ impl<'a, T: 'a> VecLike<'a, T> {
     /// assert_eq!(vec.get(2), Some(&"baz"));
     /// assert_eq!(vec.get(3), None);
     /// ```
-    pub fn get(&self, index: usize) -> Option<&T> {
+    pub fn get(&self, index: usize) -> Option<&'a T> {
         self.inner.get(index).map(|(v, _)| v)
     }
 
@@ -796,7 +796,7 @@ impl<'a, T: 'a> VecLike<'a, T> {
     /// let vec = set.as_vec_like();
     /// assert_eq!(vec.first(), Some(&"foo"));
     /// ```
-    pub fn first(&self) -> Option<&T> {
+    pub fn first(&self) -> Option<&'a T> {
         self.inner.first().map(|(v, _)| v)
     }
 
@@ -814,7 +814,7 @@ impl<'a, T: 'a> VecLike<'a, T> {
     /// let vec = set.as_vec_like();
     /// assert_eq!(vec.last(), Some(&"baz"));
     /// ```
-    pub fn last(&self) -> Option<&T> {
+    pub fn last(&self) -> Option<&'a T> {
         self.inner.last().map(|(v, _)| v)
     }
 
@@ -834,7 +834,7 @@ impl<'a, T: 'a> VecLike<'a, T> {
     /// let vec = set.as_vec_like();
     /// assert_eq!(vec.iter().cloned().collect::<Vec<_>>(), ["foo", "bar", "baz"]);
     /// ```
-    pub fn iter(&self) -> VecLikeIter<T> {
+    pub fn iter(&self) -> VecLikeIter<'a, T> {
         VecLikeIter(self.inner.iter())
     }
 

@@ -165,6 +165,12 @@ impl<K, V> Tree<K, V>
             self.non_empty_pop_root()
         })
     }
+    pub fn get_rgtmost(&mut self) -> Option<(&K, &V)> {
+        self.root().map(move |root| {
+            self.root = self.splay_rgtmost(root);
+            self.root_ref().into()
+        })
+    }
     fn push_root(&mut self, node: Node<K, V>) {
         self.nodes.push(node);
         self.root = self.nodes.len() as NodeIndex - 1;
@@ -178,6 +184,9 @@ impl<K, V> Tree<K, V>
     }
     fn splay_lftmost(&mut self, root: NodeIndex) -> NodeIndex {
         self.splay_by(root, |_| Ordering::Less).0
+    }
+    fn splay_rgtmost(&mut self, root: NodeIndex) -> NodeIndex {
+        self.splay_by(root, |_| Ordering::Greater).0
     }
     fn splay_by<F>(&mut self, mut curr_idx: NodeIndex, cmp: F) -> (NodeIndex, Ordering)
         where F: Fn(&K) -> Ordering

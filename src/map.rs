@@ -200,6 +200,38 @@ impl<K, V> SplayMap<K, V>
         self.tree.find_upper_bound(key)
     }
 
+    /// Gets the entry which have the minimum key in the map.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplayMap;
+    ///
+    /// let mut map = SplayMap::new();
+    /// map.insert(1, ());
+    /// map.insert(3, ());
+    ///
+    /// assert_eq!(map.smallest(), Some((&1, &())));
+    /// ```
+    pub fn smallest(&mut self) -> Option<(&K, &V)> {
+        self.tree.get_lftmost()
+    }
+
+    /// Gets the entry which have the maximum key in the map.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplayMap;
+    ///
+    /// let mut map = SplayMap::new();
+    /// map.insert(1, ());
+    /// map.insert(3, ());
+    ///
+    /// assert_eq!(map.largest(), Some((&3, &())));
+    /// ```
+    pub fn largest(&mut self) -> Option<(&K, &V)> {
+        self.tree.get_rgtmost()
+    }
+
     /// Inserts a key-value pair into the map.
     ///
     /// If the map did not have this key present, `None` is  returned.

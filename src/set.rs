@@ -171,6 +171,38 @@ impl<T> SplaySet<T>
         self.tree.find_upper_bound(value)
     }
 
+    /// Gets the minimum value in the map.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplaySet;
+    ///
+    /// let mut set = SplaySet::new();
+    /// set.insert(1);
+    /// set.insert(3);
+    ///
+    /// assert_eq!(set.smallest(), Some(&1));
+    /// ```
+    pub fn smallest(&mut self) -> Option<&T> {
+        self.tree.get_lftmost().map(|(v, _)| v)
+    }
+
+    /// Gets the maximum value in the map.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplaySet;
+    ///
+    /// let mut set = SplaySet::new();
+    /// set.insert(1);
+    /// set.insert(3);
+    ///
+    /// assert_eq!(set.largest(), Some(&3));
+    /// ```
+    pub fn largest(&mut self) -> Option<&T> {
+        self.tree.get_rgtmost().map(|(v, _)| v)
+    }
+
     /// Adds a value to the set.
     ///
     /// If the set did not have this value present, `true` is returned.

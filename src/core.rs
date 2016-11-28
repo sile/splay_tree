@@ -171,6 +171,12 @@ impl<K, V> Tree<K, V>
             self.root_ref().into()
         })
     }
+    pub fn take_rgtmost(&mut self) -> Option<(K, V)> {
+        self.root().map(|root| {
+            self.root = self.splay_rgtmost(root);
+            self.non_empty_pop_root()
+        })
+    }
     fn push_root(&mut self, node: Node<K, V>) {
         self.nodes.push(node);
         self.root = self.nodes.len() as NodeIndex - 1;

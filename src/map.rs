@@ -216,6 +216,24 @@ impl<K, V> SplayMap<K, V>
         self.tree.get_lftmost()
     }
 
+    /// Takes the entry which have the minimum key in the map.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplayMap;
+    ///
+    /// let mut map = SplayMap::new();
+    /// map.insert(1, ());
+    /// map.insert(3, ());
+    ///
+    /// assert_eq!(map.take_smallest(), Some((1, ())));
+    /// assert_eq!(map.take_smallest(), Some((3, ())));
+    /// assert_eq!(map.take_smallest(), None);
+    /// ```
+    pub fn take_smallest(&mut self) -> Option<(K, V)> {
+        self.tree.take_lftmost()
+    }
+
     /// Gets the entry which have the maximum key in the map.
     ///
     /// # Examples
@@ -230,6 +248,24 @@ impl<K, V> SplayMap<K, V>
     /// ```
     pub fn largest(&mut self) -> Option<(&K, &V)> {
         self.tree.get_rgtmost()
+    }
+
+    /// Takes the entry which have the maximum key in the map.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplayMap;
+    ///
+    /// let mut map = SplayMap::new();
+    /// map.insert(1, ());
+    /// map.insert(3, ());
+    ///
+    /// assert_eq!(map.take_largest(), Some((3, ())));
+    /// assert_eq!(map.take_largest(), Some((1, ())));
+    /// assert_eq!(map.take_largest(), None);
+    /// ```
+    pub fn take_largest(&mut self) -> Option<(K, V)> {
+        self.tree.take_rgtmost()
     }
 
     /// Inserts a key-value pair into the map.

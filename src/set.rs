@@ -187,6 +187,24 @@ impl<T> SplaySet<T>
         self.tree.get_lftmost().map(|(v, _)| v)
     }
 
+    /// Takes the minimum value in the map.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplaySet;
+    ///
+    /// let mut set = SplaySet::new();
+    /// set.insert(1);
+    /// set.insert(3);
+    ///
+    /// assert_eq!(set.take_smallest(), Some(1));
+    /// assert_eq!(set.take_smallest(), Some(3));
+    /// assert_eq!(set.take_smallest(), None);
+    /// ```
+    pub fn take_smallest(&mut self) -> Option<T> {
+        self.tree.take_lftmost().map(|(v, _)| v)
+    }
+
     /// Gets the maximum value in the map.
     ///
     /// # Examples
@@ -201,6 +219,24 @@ impl<T> SplaySet<T>
     /// ```
     pub fn largest(&mut self) -> Option<&T> {
         self.tree.get_rgtmost().map(|(v, _)| v)
+    }
+
+    /// Takes the maximum value in the map.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplaySet;
+    ///
+    /// let mut set = SplaySet::new();
+    /// set.insert(1);
+    /// set.insert(3);
+    ///
+    /// assert_eq!(set.take_largest(), Some(3));
+    /// assert_eq!(set.take_largest(), Some(1));
+    /// assert_eq!(set.take_largest(), None);
+    /// ```
+    pub fn take_largest(&mut self) -> Option<T> {
+        self.tree.take_rgtmost().map(|(v, _)| v)
     }
 
     /// Adds a value to the set.

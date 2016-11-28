@@ -2,10 +2,11 @@ extern crate splay_tree;
 extern crate rand;
 
 use std::hash;
+use std::collections::hash_map::DefaultHasher;
 
 fn hash<T: hash::Hash>(x: &T) -> u64 {
     use std::hash::Hasher;
-    let mut hasher = hash::SipHasher::new();
+    let mut hasher = DefaultHasher::new();
     x.hash(&mut hasher);
     hasher.finish()
 }

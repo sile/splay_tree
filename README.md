@@ -13,7 +13,7 @@ splay_tree
 Documentation
 -------------
 
-See [RustDoc Documentation](http://sile.github.io/rustdocs/splay_tree/splay_tree/).
+See [RustDoc Documentation](https://docs.rs/splay_tree/).
 
 The documentation includes some examples.
 

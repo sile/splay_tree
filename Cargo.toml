@@ -10,5 +10,12 @@ readme = "README.md"
 keywords = []
 license = "MIT"
 
+[dependencies]
+serde = { version = "1", optional = true,  default-features = false, features = ["alloc", "derive"] }
+
 [dev-dependencies]
 rand = "0.3"
+
+[features]
+std = []
+default = ["std", "serde/std"]

@@ -1,13 +1,13 @@
 use std::slice;
 use std::borrow::Borrow;
-use core;
+use tree_core;
 
 #[derive(Debug, Clone)]
 pub struct VecLike<'a, K: 'a, V: 'a> {
-    tree: &'a core::Tree<K, V>,
+    tree: &'a tree_core::Tree<K, V>,
 }
 impl<'a, K: 'a, V: 'a> VecLike<'a, K, V> {
-    pub fn new(tree: &'a core::Tree<K, V>) -> Self {
+    pub fn new(tree: &'a tree_core::Tree<K, V>) -> Self {
         VecLike { tree: tree }
     }
     pub fn len(&self) -> usize {
@@ -15,7 +15,7 @@ impl<'a, K: 'a, V: 'a> VecLike<'a, K, V> {
     }
     pub fn get(&self, index: usize) -> Option<(&'a K, &'a V)> {
         if index < self.tree.len() {
-            Some(self.tree.node_ref(index as core::NodeIndex).into())
+            Some(self.tree.node_ref(index as tree_core::NodeIndex).into())
         } else {
             None
         }
@@ -34,7 +34,7 @@ impl<'a, K: 'a, V: 'a> VecLike<'a, K, V> {
 
 #[derive(Debug)]
 pub struct VecLikeMut<'a, K: 'a, V: 'a> {
-    tree: &'a mut core::Tree<K, V>,
+    tree: &'a mut tree_core::Tree<K, V>,
 }
 impl<'a, K: 'a, V: 'a> VecLikeMut<'a, K, V>
     where K: Ord
@@ -62,7 +62,7 @@ impl<'a, K: 'a, V: 'a> VecLikeMut<'a, K, V>
     }
 }
 impl<'a, K: 'a, V: 'a> VecLikeMut<'a, K, V> {
-    pub fn new(tree: &'a mut core::Tree<K, V>) -> Self {
+    pub fn new(tree: &'a mut tree_core::Tree<K, V>) -> Self {
         VecLikeMut { tree: tree }
     }
     pub fn len(&self) -> usize {
@@ -70,7 +70,7 @@ impl<'a, K: 'a, V: 'a> VecLikeMut<'a, K, V> {
     }
     pub fn get(&self, index: usize) -> Option<(&K, &V)> {
         if index < self.tree.len() {
-            Some(self.tree.node_ref(index as core::NodeIndex).into())
+            Some(self.tree.node_ref(index as tree_core::NodeIndex).into())
         } else {
             None
         }
@@ -78,7 +78,7 @@ impl<'a, K: 'a, V: 'a> VecLikeMut<'a, K, V> {
     #[allow(dead_code)]
     pub fn get_mut(&mut self, index: usize) -> Option<(&K, &mut V)> {
         if index < self.tree.len() {
-            Some(self.tree.node_mut(index as core::NodeIndex).into())
+            Some(self.tree.node_mut(index as tree_core::NodeIndex).into())
         } else {
             None
         }
@@ -108,7 +108,7 @@ impl<'a, K: 'a, V: 'a> VecLikeMut<'a, K, V> {
     }
 }
 
-pub struct Iter<'a, K: 'a, V: 'a>(slice::Iter<'a, core::Node<K, V>>);
+pub struct Iter<'a, K: 'a, V: 'a>(slice::Iter<'a, tree_core::Node<K, V>>);
 impl<'a, K: 'a, V: 'a> Iterator for Iter<'a, K, V> {
     type Item = (&'a K, &'a V);
     fn next(&mut self) -> Option<Self::Item> {
@@ -116,7 +116,7 @@ impl<'a, K: 'a, V: 'a> Iterator for Iter<'a, K, V> {
     }
 }
 
-pub struct IterMut<'a, K: 'a, V: 'a>(slice::IterMut<'a, core::Node<K, V>>);
+pub struct IterMut<'a, K: 'a, V: 'a>(slice::IterMut<'a, tree_core::Node<K, V>>);
 impl<'a, K: 'a, V: 'a> Iterator for IterMut<'a, K, V> {
     type Item = (&'a K, &'a mut V);
     fn next(&mut self) -> Option<Self::Item> {

@@ -1,7 +1,7 @@
 //! A priority queue implemented with a splay tree.
 use std;
 use std::cmp;
-use core;
+use tree_core;
 use iter;
 
 /// `SplayHeap` iterator.
@@ -9,7 +9,7 @@ pub struct Iter<'a, T: 'a> {
     iter: iter::Iter<'a, Item<T>, ()>,
 }
 impl<'a, T: 'a> Iter<'a, T> {
-    fn new(tree: &'a core::Tree<Item<T>, ()>) -> Self {
+    fn new(tree: &'a tree_core::Tree<Item<T>, ()>) -> Self {
         Iter { iter: tree.iter() }
     }
 }
@@ -73,7 +73,7 @@ impl<T> Ord for Item<T>
 /// ```
 #[derive(Debug,Clone)]
 pub struct SplayHeap<T> {
-    tree: core::Tree<Item<T>, ()>,
+    tree: tree_core::Tree<Item<T>, ()>,
     seq: u64,
 }
 impl<T> SplayHeap<T>
@@ -91,7 +91,7 @@ impl<T> SplayHeap<T>
     /// ```
     pub fn new() -> Self {
         SplayHeap {
-            tree: core::Tree::new(),
+            tree: tree_core::Tree::new(),
             seq: 0,
         }
     }
@@ -163,7 +163,7 @@ impl<T> SplayHeap<T>
     /// assert!(heap.is_empty());
     /// ```
     pub fn clear(&mut self) {
-        self.tree = core::Tree::new();
+        self.tree = tree_core::Tree::new();
     }
 }
 impl<T> SplayHeap<T> {

@@ -6,12 +6,14 @@ use std::hash;
 use std::slice;
 use std::borrow::Borrow;
 use std::cmp::Ordering;
+use std::vec::Vec;
 use iter;
 
 pub type NodeIndex = u32;
 const NULL_NODE: NodeIndex = u32::MAX;
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Node<K, V> {
     lft: NodeIndex,
     rgt: NodeIndex,
@@ -59,6 +61,7 @@ impl<'a, K, V> Into<(&'a K, &'a mut V)> for &'a mut Node<K, V> {
 }
 
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Tree<K, V> {
     root: NodeIndex,
     nodes: Vec<Node<K, V>>,

@@ -2,7 +2,7 @@
 use std;
 use std::mem;
 use std::borrow::Borrow;
-use core;
+use tree_core;
 use iter;
 
 /// A map based on a splay tree.
@@ -51,7 +51,7 @@ use iter;
 /// ```
 #[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct SplayMap<K, V> {
-    tree: core::Tree<K, V>,
+    tree: tree_core::Tree<K, V>,
 }
 impl<K, V> SplayMap<K, V>
     where K: Ord
@@ -67,7 +67,7 @@ impl<K, V> SplayMap<K, V>
     /// assert_eq!(map.len(), 1);
     /// ```
     pub fn new() -> Self {
-        SplayMap { tree: core::Tree::new() }
+        SplayMap { tree: tree_core::Tree::new() }
     }
 
     /// Clears the map, removing all values.
@@ -82,7 +82,7 @@ impl<K, V> SplayMap<K, V>
     /// assert!(map.is_empty());
     /// ```
     pub fn clear(&mut self) {
-        self.tree = core::Tree::new();
+        self.tree = tree_core::Tree::new();
     }
 
     /// Returns true if the map contains a value for the specified key.
@@ -528,7 +528,7 @@ impl<'a, K, V> Extend<(&'a K, &'a V)> for SplayMap<K, V>
 /// An iterator over a SplayMap's entries.
 pub struct Iter<'a, K: 'a, V: 'a>(iter::Iter<'a, K, V>);
 impl<'a, K: 'a, V: 'a> Iter<'a, K, V> {
-    fn new(tree: &'a core::Tree<K, V>) -> Self {
+    fn new(tree: &'a tree_core::Tree<K, V>) -> Self {
         Iter(tree.iter())
     }
 }
@@ -542,7 +542,7 @@ impl<'a, K: 'a, V: 'a> Iterator for Iter<'a, K, V> {
 /// A mutable iterator over a SplayMap's entries.
 pub struct IterMut<'a, K: 'a, V: 'a>(iter::IterMut<'a, K, V>);
 impl<'a, K: 'a, V: 'a> IterMut<'a, K, V> {
-    fn new(tree: &'a mut core::Tree<K, V>) -> Self {
+    fn new(tree: &'a mut tree_core::Tree<K, V>) -> Self {
         IterMut(tree.iter_mut())
     }
 }
@@ -556,7 +556,7 @@ impl<'a, K: 'a, V: 'a> Iterator for IterMut<'a, K, V> {
 /// An owning iterator over a SplayMap's entries.
 pub struct IntoIter<K, V>(iter::IntoIter<K, V>);
 impl<K, V> IntoIter<K, V> {
-    fn new(tree: core::Tree<K, V>) -> Self {
+    fn new(tree: tree_core::Tree<K, V>) -> Self {
         IntoIter(tree.into_iter())
     }
 }
@@ -570,7 +570,7 @@ impl<K, V> Iterator for IntoIter<K, V> {
 /// An iterator over a SplayMap's keys.
 pub struct Keys<'a, K: 'a, V: 'a>(Iter<'a, K, V>);
 impl<'a, K: 'a, V: 'a> Keys<'a, K, V> {
-    fn new(tree: &'a core::Tree<K, V>) -> Self {
+    fn new(tree: &'a tree_core::Tree<K, V>) -> Self {
         Keys(Iter::new(tree))
     }
 }
@@ -584,7 +584,7 @@ impl<'a, K: 'a, V: 'a> Iterator for Keys<'a, K, V> {
 /// An iterator over a SplayMap's values.
 pub struct Values<'a, K: 'a, V: 'a>(Iter<'a, K, V>);
 impl<'a, K: 'a, V: 'a> Values<'a, K, V> {
-    fn new(tree: &'a core::Tree<K, V>) -> Self {
+    fn new(tree: &'a tree_core::Tree<K, V>) -> Self {
         Values(Iter::new(tree))
     }
 }
@@ -598,7 +598,7 @@ impl<'a, K: 'a, V: 'a> Iterator for Values<'a, K, V> {
 /// A mutable iterator over a SplayMap's values.
 pub struct ValuesMut<'a, K: 'a, V: 'a>(IterMut<'a, K, V>);
 impl<'a, K: 'a, V: 'a> ValuesMut<'a, K, V> {
-    fn new(tree: &'a mut core::Tree<K, V>) -> Self {
+    fn new(tree: &'a mut tree_core::Tree<K, V>) -> Self {
         ValuesMut(IterMut::new(tree))
     }
 }
@@ -648,7 +648,7 @@ impl<'a, K: 'a, V: 'a> Entry<'a, K, V>
 
 /// An occupied Entry.
 pub struct OccupiedEntry<'a, K: 'a, V: 'a> {
-    tree: &'a mut core::Tree<K, V>,
+    tree: &'a mut tree_core::Tree<K, V>,
 }
 impl<'a, K: 'a, V: 'a> OccupiedEntry<'a, K, V>
     where K: Ord
@@ -688,7 +688,7 @@ impl<'a, K: 'a, V: 'a> OccupiedEntry<'a, K, V>
 /// A vacant Entry.
 pub struct VacantEntry<'a, K: 'a, V: 'a> {
     key: K,
-    tree: &'a mut core::Tree<K, V>,
+    tree: &'a mut tree_core::Tree<K, V>,
 }
 impl<'a, K: 'a, V: 'a> VacantEntry<'a, K, V>
     where K: Ord

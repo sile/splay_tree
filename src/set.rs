@@ -4,7 +4,7 @@ use std::ops;
 use std::cmp;
 use std::iter::Peekable;
 use std::borrow::Borrow;
-use core;
+use tree_core;
 use iter;
 use vec_like;
 
@@ -37,7 +37,7 @@ use vec_like;
 /// ```
 #[derive(Debug,Clone,Hash,PartialEq,Eq,PartialOrd,Ord)]
 pub struct SplaySet<T> {
-    tree: core::Tree<T, ()>,
+    tree: tree_core::Tree<T, ()>,
 }
 impl<T> SplaySet<T>
     where T: Ord
@@ -52,7 +52,7 @@ impl<T> SplaySet<T>
     /// assert!(set.is_empty());
     /// ```
     pub fn new() -> Self {
-        SplaySet { tree: core::Tree::new() }
+        SplaySet { tree: tree_core::Tree::new() }
     }
 
     /// Clears the set, removing all values.
@@ -67,7 +67,7 @@ impl<T> SplaySet<T>
     /// assert!(set.is_empty());
     /// ```
     pub fn clear(&mut self) {
-        self.tree = core::Tree::new();
+        self.tree = tree_core::Tree::new();
     }
 
     /// Returns true if the set contains a value.
@@ -824,7 +824,7 @@ pub struct VecLike<'a, T: 'a> {
     inner: vec_like::VecLike<'a, T, ()>,
 }
 impl<'a, T: 'a> VecLike<'a, T> {
-    fn new(tree: &'a core::Tree<T, ()>) -> Self {
+    fn new(tree: &'a tree_core::Tree<T, ()>) -> Self {
         VecLike { inner: vec_like::VecLike::new(tree) }
     }
 
@@ -1027,7 +1027,7 @@ impl<'a, T: 'a> VecLikeMut<'a, T>
     }
 }
 impl<'a, T: 'a> VecLikeMut<'a, T> {
-    fn new(tree: &'a mut core::Tree<T, ()>) -> Self {
+    fn new(tree: &'a mut tree_core::Tree<T, ()>) -> Self {
         VecLikeMut { inner: vec_like::VecLikeMut::new(tree) }
     }
 

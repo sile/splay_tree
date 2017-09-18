@@ -2,7 +2,10 @@ splay_tree
 ==========
 
 [![](http://meritbadge.herokuapp.com/splay_tree)](https://crates.io/crates/splay_tree)
+[![Documentation](https://docs.rs/splay_tree/badge.svg)](https://docs.rs/splay_tree)
 [![Build Status](https://travis-ci.org/sile/splay_tree.svg?branch=master)](https://travis-ci.org/sile/splay_tree)
+[![Code Coverage](https://codecov.io/gh/sile/splay_tree/branch/master/graph/badge.svg)](https://codecov.io/gh/sile/splay_tree/branch/master)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 `splay_tree` provides data structures such as map, set and heap which are based on an in-place top-down splay tree.
 

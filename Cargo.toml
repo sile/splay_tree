@@ -6,7 +6,7 @@ description = "Splay Tree based Data Structures (map, set, heap)"
 homepage = "https://github.com/sile/splay_tree"
 repository = "https://github.com/sile/splay_tree"
 readme = "README.md"
-categories = ["data-structures"]
+categories = ["data-structures", "no-std"]
 license = "MIT"
 
 [badges]

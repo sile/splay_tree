@@ -37,7 +37,8 @@ pub struct VecLikeMut<'a, K: 'a, V: 'a> {
     tree: &'a mut tree_core::Tree<K, V>,
 }
 impl<'a, K: 'a, V: 'a> VecLikeMut<'a, K, V>
-    where K: Ord
+where
+    K: Ord,
 {
     pub fn push(&mut self, key: K, value: V) -> bool {
         if self.tree.contains_key(&key) {
@@ -51,8 +52,9 @@ impl<'a, K: 'a, V: 'a> VecLikeMut<'a, K, V>
         self.tree.pop_last()
     }
     pub fn find_index<Q: ?Sized>(&mut self, key: &Q) -> Option<usize>
-        where K: Borrow<Q>,
-              Q: Ord
+    where
+        K: Borrow<Q>,
+        Q: Ord,
     {
         if self.tree.contains_key(key) {
             self.tree.root().map(|i| i as usize)

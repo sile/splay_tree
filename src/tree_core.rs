@@ -67,7 +67,8 @@ pub struct Tree<K, V> {
     nodes: Vec<Node<K, V>>,
 }
 impl<K, V> Tree<K, V>
-    where K: Ord
+where
+    K: Ord,
 {
     pub fn new() -> Self {
         Tree {
@@ -76,8 +77,9 @@ impl<K, V> Tree<K, V>
         }
     }
     pub fn contains_key<Q: ?Sized>(&mut self, key: &Q) -> bool
-        where K: Borrow<Q>,
-              Q: Ord
+    where
+        K: Borrow<Q>,
+        Q: Ord,
     {
         self.root().map_or(false, |root| {
             let (root, order) = self.splay(root, key);
@@ -86,14 +88,16 @@ impl<K, V> Tree<K, V>
         })
     }
     pub fn find_lower_bound<Q: ?Sized>(&mut self, key: &Q) -> Option<&K>
-        where K: Borrow<Q>,
-              Q: Ord
+    where
+        K: Borrow<Q>,
+        Q: Ord,
     {
         self.find_bound(|k| key.cmp(k.borrow()))
     }
     pub fn find_upper_bound<Q: ?Sized>(&mut self, key: &Q) -> Option<&K>
-        where K: Borrow<Q>,
-              Q: Ord
+    where
+        K: Borrow<Q>,
+        Q: Ord,
     {
         self.find_bound(|k| match key.cmp(k.borrow()) {
             Ordering::Equal => Ordering::Greater,
@@ -101,8 +105,9 @@ impl<K, V> Tree<K, V>
         })
     }
     pub fn get<Q: ?Sized>(&mut self, key: &Q) -> Option<&mut V>
-        where K: Borrow<Q>,
-              Q: Ord
+    where
+        K: Borrow<Q>,
+        Q: Ord,
     {
         if self.contains_key(key) {
             Some(&mut self.root_mut().val)
@@ -138,8 +143,9 @@ impl<K, V> Tree<K, V>
         }
     }
     pub fn remove<Q: ?Sized>(&mut self, key: &Q) -> Option<V>
-        where K: Borrow<Q>,
-              Q: Ord
+    where
+        K: Borrow<Q>,
+        Q: Ord,
     {
         if self.contains_key(key) {
             Some(self.non_empty_pop_root().1)
@@ -148,10 +154,13 @@ impl<K, V> Tree<K, V>
         }
     }
     pub fn pop_last(&mut self) -> Option<(K, V)> {
-        self.nodes.last().map(|n| unsafe { &*(&n.key as *const _) }).map(|key| {
-            self.contains_key(key);
-            self.non_empty_pop_root()
-        })
+        self.nodes
+            .last()
+            .map(|n| unsafe { &*(&n.key as *const _) })
+            .map(|key| {
+                self.contains_key(key);
+                self.non_empty_pop_root()
+            })
     }
     pub fn pop_root(&mut self) -> Option<(K, V)> {
         self.root().map(|_| self.non_empty_pop_root())
@@ -186,8 +195,9 @@ impl<K, V> Tree<K, V>
         assert!(self.root != NULL_NODE);
     }
     fn splay<Q: ?Sized>(&mut self, root: NodeIndex, key: &Q) -> (NodeIndex, Ordering)
-        where K: Borrow<Q>,
-              Q: Ord
+    where
+        K: Borrow<Q>,
+        Q: Ord,
     {
         self.splay_by(root, |k| key.cmp(k.borrow()))
     }
@@ -198,7 +208,8 @@ impl<K, V> Tree<K, V>
         self.splay_by(root, |_| Ordering::Greater).0
     }
     fn splay_by<F>(&mut self, mut curr_idx: NodeIndex, cmp: F) -> (NodeIndex, Ordering)
-        where F: Fn(&K) -> Ordering
+    where
+        F: Fn(&K) -> Ordering,
     {
         use std::mem::replace;
         let mut lft_root_idx = NULL_NODE;
@@ -222,8 +233,9 @@ impl<K, V> Tree<K, V>
                             let grand_child_idx = replace(&mut child_mut.lft, NULL_NODE);
                             curr_mut.lft = replace(&mut child_mut.rgt, curr_idx);
                             curr_idx = replace(&mut child_idx, grand_child_idx);
-                            curr_mut = replace(&mut child_mut,
-                                               unsafe { self.aliasable_node_mut(grand_child_idx) });
+                            curr_mut = replace(&mut child_mut, unsafe {
+                                self.aliasable_node_mut(grand_child_idx)
+                            });
                             order = cmp(child_mut.key.borrow());
                         }
                         *rgt_lftmost_idx = curr_idx;
@@ -239,8 +251,9 @@ impl<K, V> Tree<K, V>
                             let grand_child_idx = replace(&mut child_mut.rgt, NULL_NODE);
                             curr_mut.rgt = replace(&mut child_mut.lft, curr_idx);
                             curr_idx = replace(&mut child_idx, grand_child_idx);
-                            curr_mut = replace(&mut child_mut,
-                                               unsafe { self.aliasable_node_mut(grand_child_idx) });
+                            curr_mut = replace(&mut child_mut, unsafe {
+                                self.aliasable_node_mut(grand_child_idx)
+                            });
                             order = cmp(child_mut.key.borrow());
                         }
                         *lft_rgtmost_idx = curr_idx;
@@ -260,9 +273,21 @@ impl<K, V> Tree<K, V>
     }
     fn non_empty_pop_root(&mut self) -> (K, V) {
         let new_root = match *self.root_ref() {
-            Node { lft: NULL_NODE, rgt: NULL_NODE, .. } => NULL_NODE,
-            Node { lft, rgt: NULL_NODE, .. } => lft,
-            Node { lft: NULL_NODE, rgt, .. } => rgt,
+            Node {
+                lft: NULL_NODE,
+                rgt: NULL_NODE,
+                ..
+            } => NULL_NODE,
+            Node {
+                lft,
+                rgt: NULL_NODE,
+                ..
+            } => lft,
+            Node {
+                lft: NULL_NODE,
+                rgt,
+                ..
+            } => rgt,
             Node { lft, rgt, .. } if self.node_ref(rgt).lft == NULL_NODE => {
                 self.node_mut(rgt).lft = lft;
                 rgt
@@ -288,7 +313,8 @@ impl<K, V> Tree<K, V>
         }
     }
     fn find_bound<F>(&mut self, cmp: F) -> Option<&K>
-        where F: Fn(&K) -> Ordering
+    where
+        F: Fn(&K) -> Ordering,
     {
         self.root().and_then(move |root| {
             let (root, order) = self.splay_by(root, cmp);
@@ -357,11 +383,13 @@ impl<K, V> Tree<K, V> {
     }
 }
 impl<K, V> hash::Hash for Tree<K, V>
-    where K: hash::Hash,
-          V: hash::Hash
+where
+    K: hash::Hash,
+    V: hash::Hash,
 {
     fn hash<H>(&self, state: &mut H)
-        where H: hash::Hasher
+    where
+        H: hash::Hasher,
     {
         for e in self.iter() {
             e.hash(state);
@@ -369,21 +397,24 @@ impl<K, V> hash::Hash for Tree<K, V>
     }
 }
 impl<K, V> PartialEq for Tree<K, V>
-    where K: PartialEq,
-          V: PartialEq
+where
+    K: PartialEq,
+    V: PartialEq,
 {
     fn eq(&self, other: &Self) -> bool {
         self.len() == other.len() && self.iter().zip(other.iter()).all(|(a, b)| a.eq(&b))
     }
 }
 impl<K, V> Eq for Tree<K, V>
-    where K: Eq,
-          V: Eq
+where
+    K: Eq,
+    V: Eq,
 {
 }
 impl<K, V> PartialOrd for Tree<K, V>
-    where K: PartialOrd,
-          V: PartialOrd
+where
+    K: PartialOrd,
+    V: PartialOrd,
 {
     fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
         let mut i0 = self.iter();
@@ -404,8 +435,9 @@ impl<K, V> PartialOrd for Tree<K, V>
     }
 }
 impl<K, V> Ord for Tree<K, V>
-    where K: Ord,
-          V: Ord
+where
+    K: Ord,
+    V: Ord,
 {
     fn cmp(&self, other: &Self) -> cmp::Ordering {
         let mut i0 = self.iter();

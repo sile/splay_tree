@@ -59,23 +59,29 @@ mod map {
 
     #[test]
     fn iterator() {
-        let mut map: SplayMap<_, _> =
-            vec![("foo", 1), ("bar", 2), ("baz", 3)].into_iter().collect();
-        assert_eq!(vec!["bar", "baz", "foo"],
-                   map.keys().cloned().collect::<Vec<_>>());
+        let mut map: SplayMap<_, _> = vec![("foo", 1), ("bar", 2), ("baz", 3)]
+            .into_iter()
+            .collect();
+        assert_eq!(
+            vec!["bar", "baz", "foo"],
+            map.keys().cloned().collect::<Vec<_>>()
+        );
         assert_eq!(vec![2, 3, 1], map.values().cloned().collect::<Vec<_>>());
         for v in map.values_mut() {
             *v += 10;
         }
-        assert_eq!(vec![("bar", 12), ("baz", 13), ("foo", 11)],
-                   map.into_iter().collect::<Vec<_>>());
+        assert_eq!(
+            vec![("bar", 12), ("baz", 13), ("foo", 11)],
+            map.into_iter().collect::<Vec<_>>()
+        );
     }
 
     #[test]
     fn find_lower_or_upper_bound_key() {
         // small map
-        let mut map: SplayMap<_, _> =
-            vec![("foo", 1), ("bar", 2), ("baz", 3)].into_iter().collect();
+        let mut map: SplayMap<_, _> = vec![("foo", 1), ("bar", 2), ("baz", 3)]
+            .into_iter()
+            .collect();
         assert_eq!(map.find_lower_bound_key("aaa"), Some(&"bar"));
         assert_eq!(map.find_upper_bound_key("aaa"), Some(&"bar"));
         assert_eq!(map.find_lower_bound_key("baz"), Some(&"baz"));
@@ -124,8 +130,10 @@ mod map {
         let mut map = SplayMap::new();
         map.extend(vec![("foo", 1), ("bar", 2)]);
         map.extend(vec![("bar", 3), ("baz", 4)]);
-        assert_eq!(vec![("bar", 3), ("baz", 4), ("foo", 1)],
-                   map.into_iter().collect::<Vec<_>>());
+        assert_eq!(
+            vec![("bar", 3), ("baz", 4), ("foo", 1)],
+            map.into_iter().collect::<Vec<_>>()
+        );
     }
 
     #[test]
@@ -211,10 +219,14 @@ mod set {
     #[test]
     fn iterator() {
         let set: SplaySet<_> = vec!["foo", "bar", "baz"].into_iter().collect();
-        assert_eq!(set.iter().cloned().collect::<Vec<_>>(),
-                   ["bar", "baz", "foo"]);
-        assert_eq!((&set).into_iter().cloned().collect::<Vec<_>>(),
-                   ["bar", "baz", "foo"]);
+        assert_eq!(
+            set.iter().cloned().collect::<Vec<_>>(),
+            ["bar", "baz", "foo"]
+        );
+        assert_eq!(
+            (&set).into_iter().cloned().collect::<Vec<_>>(),
+            ["bar", "baz", "foo"]
+        );
         assert_eq!(set.into_iter().collect::<Vec<_>>(), ["bar", "baz", "foo"]);
     }
 
@@ -306,8 +318,10 @@ mod set {
         assert_eq!(a.difference(&b).cloned().collect::<Vec<_>>(), [1, 2]);
         assert_eq!((&a - &b).into_iter().collect::<Vec<_>>(), [1, 2]);
 
-        assert_eq!(a.symmetric_difference(&b).cloned().collect::<Vec<_>>(),
-                   [1, 2, 4, 5]);
+        assert_eq!(
+            a.symmetric_difference(&b).cloned().collect::<Vec<_>>(),
+            [1, 2, 4, 5]
+        );
         assert_eq!((&a ^ &b).into_iter().collect::<Vec<_>>(), [1, 2, 4, 5]);
 
         assert_eq!(a.intersection(&b).cloned().collect::<Vec<_>>(), [3]);
@@ -405,8 +419,10 @@ mod heap {
     fn iterator() {
         let heap = vec![1, 2, 3].into_iter().collect::<SplayHeap<_>>();
         assert_eq!(vec![3, 2, 1], heap.iter().cloned().collect::<Vec<_>>());
-        assert_eq!(vec![3, 2, 1],
-                   (&heap).into_iter().cloned().collect::<Vec<_>>());
+        assert_eq!(
+            vec![3, 2, 1],
+            (&heap).into_iter().cloned().collect::<Vec<_>>()
+        );
         assert_eq!(vec![3, 2, 1], heap.into_iter().collect::<Vec<_>>());
     }
 
@@ -415,8 +431,10 @@ mod heap {
         let mut heap = SplayHeap::new();
         heap.extend(vec![1, 2, 3]);
         heap.extend(vec![&3, &4]);
-        assert_eq!(vec![4, 3, 3, 2, 1],
-                   heap.iter().cloned().collect::<Vec<_>>());
+        assert_eq!(
+            vec![4, 3, 3, 2, 1],
+            heap.iter().cloned().collect::<Vec<_>>()
+        );
     }
 
     #[test]

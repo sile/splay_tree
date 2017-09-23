@@ -1,4 +1,4 @@
-//! A map based on a B-Tree.
+//! A map based on a splay tree.
 use std;
 use std::mem;
 use std::borrow::Borrow;
@@ -54,7 +54,8 @@ pub struct SplayMap<K, V> {
     tree: tree_core::Tree<K, V>,
 }
 impl<K, V> SplayMap<K, V>
-    where K: Ord
+where
+    K: Ord,
 {
     /// Makes a new empty `SplayMap`.
     ///
@@ -105,8 +106,9 @@ impl<K, V> SplayMap<K, V>
     /// assert!(!map.contains_key("bar"));
     /// ```
     pub fn contains_key<Q: ?Sized>(&mut self, key: &Q) -> bool
-        where K: Borrow<Q>,
-              Q: Ord
+    where
+        K: Borrow<Q>,
+        Q: Ord,
     {
         self.tree.contains_key(key)
     }
@@ -131,8 +133,9 @@ impl<K, V> SplayMap<K, V>
     /// assert_eq!(map.get("bar"), None);
     /// ```
     pub fn get<Q: ?Sized>(&mut self, key: &Q) -> Option<&V>
-        where K: Borrow<Q>,
-              Q: Ord
+    where
+        K: Borrow<Q>,
+        Q: Ord,
     {
         self.get_mut(key).map(|v| &*v)
     }
@@ -152,8 +155,9 @@ impl<K, V> SplayMap<K, V>
     /// assert_eq!(map.get("foo"), Some(&2));
     /// ```
     pub fn get_mut<Q: ?Sized>(&mut self, key: &Q) -> Option<&mut V>
-        where K: Borrow<Q>,
-              Q: Ord
+    where
+        K: Borrow<Q>,
+        Q: Ord,
     {
         self.tree.get(key)
     }
@@ -173,8 +177,9 @@ impl<K, V> SplayMap<K, V>
     /// assert_eq!(map.find_lower_bound_key(&4), None);
     /// ```
     pub fn find_lower_bound_key<Q: ?Sized>(&mut self, key: &Q) -> Option<&K>
-        where K: Borrow<Q>,
-              Q: Ord
+    where
+        K: Borrow<Q>,
+        Q: Ord,
     {
         self.tree.find_lower_bound(key)
     }
@@ -194,8 +199,9 @@ impl<K, V> SplayMap<K, V>
     /// assert_eq!(map.find_upper_bound_key(&4), None);
     /// ```
     pub fn find_upper_bound_key<Q: ?Sized>(&mut self, key: &Q) -> Option<&K>
-        where K: Borrow<Q>,
-              Q: Ord
+    where
+        K: Borrow<Q>,
+        Q: Ord,
     {
         self.tree.find_upper_bound(key)
     }
@@ -307,8 +313,9 @@ impl<K, V> SplayMap<K, V>
     /// assert_eq!(map.remove("foo"), None);
     /// ```
     pub fn remove<Q: ?Sized>(&mut self, key: &Q) -> Option<V>
-        where K: Borrow<Q>,
-              Q: Ord
+    where
+        K: Borrow<Q>,
+        Q: Ord,
     {
         self.tree.remove(key)
     }
@@ -455,17 +462,20 @@ impl<K, V> SplayMap<K, V> {
     }
 }
 impl<K, V> Default for SplayMap<K, V>
-    where K: Ord
+where
+    K: Ord,
 {
     fn default() -> Self {
         SplayMap::new()
     }
 }
 impl<K, V> std::iter::FromIterator<(K, V)> for SplayMap<K, V>
-    where K: Ord
+where
+    K: Ord,
 {
     fn from_iter<I>(iter: I) -> Self
-        where I: IntoIterator<Item = (K, V)>
+    where
+        I: IntoIterator<Item = (K, V)>,
     {
         let mut map = SplayMap::new();
         for (k, v) in iter {
@@ -475,8 +485,9 @@ impl<K, V> std::iter::FromIterator<(K, V)> for SplayMap<K, V>
     }
 }
 impl<'a, K, V> IntoIterator for &'a SplayMap<K, V>
-    where K: 'a,
-          V: 'a
+where
+    K: 'a,
+    V: 'a,
 {
     type Item = (&'a K, &'a V);
     type IntoIter = Iter<'a, K, V>;
@@ -485,8 +496,9 @@ impl<'a, K, V> IntoIterator for &'a SplayMap<K, V>
     }
 }
 impl<'a, K, V> IntoIterator for &'a mut SplayMap<K, V>
-    where K: 'a,
-          V: 'a
+where
+    K: 'a,
+    V: 'a,
 {
     type Item = (&'a K, &'a mut V);
     type IntoIter = IterMut<'a, K, V>;
@@ -502,10 +514,12 @@ impl<K, V> IntoIterator for SplayMap<K, V> {
     }
 }
 impl<K, V> Extend<(K, V)> for SplayMap<K, V>
-    where K: Ord
+where
+    K: Ord,
 {
     fn extend<T>(&mut self, iter: T)
-        where T: IntoIterator<Item = (K, V)>
+    where
+        T: IntoIterator<Item = (K, V)>,
     {
         for (k, v) in iter {
             self.insert(k, v);
@@ -513,11 +527,13 @@ impl<K, V> Extend<(K, V)> for SplayMap<K, V>
     }
 }
 impl<'a, K, V> Extend<(&'a K, &'a V)> for SplayMap<K, V>
-    where K: 'a + Copy + Ord,
-          V: 'a + Copy
+where
+    K: 'a + Copy + Ord,
+    V: 'a + Copy,
 {
     fn extend<T>(&mut self, iter: T)
-        where T: IntoIterator<Item = (&'a K, &'a V)>
+    where
+        T: IntoIterator<Item = (&'a K, &'a V)>,
     {
         for (k, v) in iter {
             self.insert(*k, *v);
@@ -617,7 +633,8 @@ pub enum Entry<'a, K: 'a, V: 'a> {
     Vacant(VacantEntry<'a, K, V>),
 }
 impl<'a, K: 'a, V: 'a> Entry<'a, K, V>
-    where K: Ord
+where
+    K: Ord,
 {
     /// Returns a reference to this entry's key.
     pub fn key(&self) -> &K {
@@ -651,7 +668,8 @@ pub struct OccupiedEntry<'a, K: 'a, V: 'a> {
     tree: &'a mut tree_core::Tree<K, V>,
 }
 impl<'a, K: 'a, V: 'a> OccupiedEntry<'a, K, V>
-    where K: Ord
+where
+    K: Ord,
 {
     /// Gets a reference to the key in the entry.
     pub fn key(&self) -> &K {
@@ -691,7 +709,8 @@ pub struct VacantEntry<'a, K: 'a, V: 'a> {
     tree: &'a mut tree_core::Tree<K, V>,
 }
 impl<'a, K: 'a, V: 'a> VacantEntry<'a, K, V>
-    where K: Ord
+where
+    K: Ord,
 {
     /// Gets a reference to the key that would be used
     /// when inserting a value through the VacantEntry.

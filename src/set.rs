@@ -35,12 +35,13 @@ use vec_like;
 ///
 /// assert_eq!(vec!["baz", "foo"], set.into_iter().collect::<Vec<_>>());
 /// ```
-#[derive(Debug,Clone,Hash,PartialEq,Eq,PartialOrd,Ord)]
+#[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub struct SplaySet<T> {
     tree: tree_core::Tree<T, ()>,
 }
 impl<T> SplaySet<T>
-    where T: Ord
+where
+    T: Ord,
 {
     /// Makes a new SplaySet
     ///
@@ -88,8 +89,9 @@ impl<T> SplaySet<T>
     /// assert!(!set.contains("bar"));
     /// ```
     pub fn contains<Q: ?Sized>(&mut self, value: &Q) -> bool
-        where T: Borrow<Q>,
-              Q: Ord
+    where
+        T: Borrow<Q>,
+        Q: Ord,
     {
         self.tree.contains_key(value)
     }
@@ -112,8 +114,9 @@ impl<T> SplaySet<T>
     /// assert_eq!(set.get("bar"), None);
     /// ```
     pub fn get<Q: ?Sized>(&mut self, value: &Q) -> Option<&T>
-        where T: Borrow<Q>,
-              Q: Ord
+    where
+        T: Borrow<Q>,
+        Q: Ord,
     {
         if self.tree.get(value).is_some() {
             Some(&self.tree.root_ref().key)
@@ -141,8 +144,9 @@ impl<T> SplaySet<T>
     /// assert_eq!(set.find_lower_bound(&4), None);
     /// ```
     pub fn find_lower_bound<Q: ?Sized>(&mut self, value: &Q) -> Option<&T>
-        where T: Borrow<Q>,
-              Q: Ord
+    where
+        T: Borrow<Q>,
+        Q: Ord,
     {
         self.tree.find_lower_bound(value)
     }
@@ -165,8 +169,9 @@ impl<T> SplaySet<T>
     /// assert_eq!(set.find_upper_bound(&4), None);
     /// ```
     pub fn find_upper_bound<Q: ?Sized>(&mut self, value: &Q) -> Option<&T>
-        where T: Borrow<Q>,
-              Q: Ord
+    where
+        T: Borrow<Q>,
+        Q: Ord,
     {
         self.tree.find_upper_bound(value)
     }
@@ -292,8 +297,9 @@ impl<T> SplaySet<T>
     /// assert_eq!(set.remove("foo"), false);
     /// ```
     pub fn remove<Q: ?Sized>(&mut self, value: &Q) -> bool
-        where T: Borrow<Q>,
-              Q: Ord
+    where
+        T: Borrow<Q>,
+        Q: Ord,
     {
         self.tree.remove(value).is_some()
     }
@@ -313,8 +319,9 @@ impl<T> SplaySet<T>
     /// assert_eq!(set.take("foo"), None);
     /// ```
     pub fn take<Q: ?Sized>(&mut self, value: &Q) -> Option<T>
-        where T: Borrow<Q>,
-              Q: Ord
+    where
+        T: Borrow<Q>,
+        Q: Ord,
     {
         if self.contains(value) {
             self.tree.pop_root().map(|(e, _)| e)
@@ -554,17 +561,20 @@ impl<T> SplaySet<T> {
     }
 }
 impl<T> Default for SplaySet<T>
-    where T: Ord
+where
+    T: Ord,
 {
     fn default() -> Self {
         SplaySet::new()
     }
 }
 impl<T> std::iter::FromIterator<T> for SplaySet<T>
-    where T: Ord
+where
+    T: Ord,
 {
     fn from_iter<I>(iter: I) -> Self
-        where I: IntoIterator<Item = T>
+    where
+        I: IntoIterator<Item = T>,
     {
         let mut set = SplaySet::new();
         for x in iter {
@@ -588,10 +598,12 @@ impl<'a, T> IntoIterator for &'a SplaySet<T> {
     }
 }
 impl<T> Extend<T> for SplaySet<T>
-    where T: Ord
+where
+    T: Ord,
 {
     fn extend<I>(&mut self, iter: I)
-        where I: IntoIterator<Item = T>
+    where
+        I: IntoIterator<Item = T>,
     {
         for x in iter {
             self.insert(x);
@@ -599,10 +611,12 @@ impl<T> Extend<T> for SplaySet<T>
     }
 }
 impl<'a, T> Extend<&'a T> for SplaySet<T>
-    where T: Copy + 'a + Ord
+where
+    T: Copy + 'a + Ord,
 {
     fn extend<I>(&mut self, iter: I)
-        where I: IntoIterator<Item = &'a T>
+    where
+        I: IntoIterator<Item = &'a T>,
     {
         for x in iter {
             self.insert(*x);
@@ -610,7 +624,8 @@ impl<'a, T> Extend<&'a T> for SplaySet<T>
     }
 }
 impl<'a, 'b, T> ops::Sub<&'b SplaySet<T>> for &'a SplaySet<T>
-    where T: Ord + Clone
+where
+    T: Ord + Clone,
 {
     type Output = SplaySet<T>;
 
@@ -631,7 +646,8 @@ impl<'a, 'b, T> ops::Sub<&'b SplaySet<T>> for &'a SplaySet<T>
     }
 }
 impl<'a, 'b, T> ops::BitXor<&'b SplaySet<T>> for &'a SplaySet<T>
-    where T: Ord + Clone
+where
+    T: Ord + Clone,
 {
     type Output = SplaySet<T>;
 
@@ -652,7 +668,8 @@ impl<'a, 'b, T> ops::BitXor<&'b SplaySet<T>> for &'a SplaySet<T>
     }
 }
 impl<'a, 'b, T> ops::BitAnd<&'b SplaySet<T>> for &'a SplaySet<T>
-    where T: Ord + Clone
+where
+    T: Ord + Clone,
 {
     type Output = SplaySet<T>;
 
@@ -673,7 +690,8 @@ impl<'a, 'b, T> ops::BitAnd<&'b SplaySet<T>> for &'a SplaySet<T>
     }
 }
 impl<'a, 'b, T> ops::BitOr<&'b SplaySet<T>> for &'a SplaySet<T>
-    where T: Ord + Clone
+where
+    T: Ord + Clone,
 {
     type Output = SplaySet<T>;
 
@@ -718,7 +736,8 @@ impl<T> Iterator for IntoIter<T> {
 }
 
 fn item_cmp<T>(a: Option<&T>, b: Option<&T>) -> Option<cmp::Ordering>
-    where T: Ord
+where
+    T: Ord,
 {
     match (a, b) {
         (None, None) => None,
@@ -731,7 +750,8 @@ fn item_cmp<T>(a: Option<&T>, b: Option<&T>) -> Option<cmp::Ordering>
 /// A lazy iterator producing elements in the set difference (in-order).
 pub struct Difference<'a, T: 'a>(Peekable<Iter<'a, T>>, Peekable<Iter<'a, T>>);
 impl<'a, T: 'a> Iterator for Difference<'a, T>
-    where T: Ord
+where
+    T: Ord,
 {
     type Item = &'a T;
     fn next(&mut self) -> Option<Self::Item> {
@@ -754,7 +774,8 @@ impl<'a, T: 'a> Iterator for Difference<'a, T>
 /// A lazy iterator producing elements in the set symmetric difference (in-order).
 pub struct SymmetricDifference<'a, T: 'a>(Peekable<Iter<'a, T>>, Peekable<Iter<'a, T>>);
 impl<'a, T: 'a> Iterator for SymmetricDifference<'a, T>
-    where T: Ord
+where
+    T: Ord,
 {
     type Item = &'a T;
     fn next(&mut self) -> Option<Self::Item> {
@@ -775,7 +796,8 @@ impl<'a, T: 'a> Iterator for SymmetricDifference<'a, T>
 /// A lazy iterator producing elements in the set intersection (in-order).
 pub struct Intersection<'a, T: 'a>(Peekable<Iter<'a, T>>, Peekable<Iter<'a, T>>);
 impl<'a, T: 'a> Iterator for Intersection<'a, T>
-    where T: Ord
+where
+    T: Ord,
 {
     type Item = &'a T;
     fn next(&mut self) -> Option<Self::Item> {
@@ -800,7 +822,8 @@ impl<'a, T: 'a> Iterator for Intersection<'a, T>
 /// A lazy iterator producing elements in the set union (in-order).
 pub struct Union<'a, T: 'a>(Peekable<Iter<'a, T>>, Peekable<Iter<'a, T>>);
 impl<'a, T: 'a> Iterator for Union<'a, T>
-    where T: Ord
+where
+    T: Ord,
 {
     type Item = &'a T;
     fn next(&mut self) -> Option<Self::Item> {
@@ -944,7 +967,8 @@ pub struct VecLikeMut<'a, T: 'a> {
     inner: vec_like::VecLikeMut<'a, T, ()>,
 }
 impl<'a, T: 'a> VecLikeMut<'a, T>
-    where T: Ord
+where
+    T: Ord,
 {
     /// Appends a new element to the back of the vector like set.
     ///
@@ -1020,8 +1044,9 @@ impl<'a, T: 'a> VecLikeMut<'a, T>
     /// assert_eq!(vec.find_index("qux"), None);
     /// ```
     pub fn find_index<Q: ?Sized>(&mut self, value: &Q) -> Option<usize>
-        where T: Borrow<Q>,
-              Q: Ord
+    where
+        T: Borrow<Q>,
+        Q: Ord,
     {
         self.inner.find_index(value)
     }

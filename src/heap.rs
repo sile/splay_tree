@@ -29,10 +29,11 @@ impl<T> Iterator for IntoIter<T> {
     }
 }
 
-#[derive(Debug,Clone,PartialEq,Eq,PartialOrd)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
 struct Item<T>(T, u64);
 impl<T> Ord for Item<T>
-    where T: Ord
+where
+    T: Ord,
 {
     fn cmp(&self, other: &Self) -> cmp::Ordering {
         match self.0.cmp(&other.0) {
@@ -71,13 +72,14 @@ impl<T> Ord for Item<T>
 /// assert_eq!(heap.pop(), Some(0));
 /// assert_eq!(heap.pop(), None);
 /// ```
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct SplayHeap<T> {
     tree: tree_core::Tree<Item<T>, ()>,
     seq: u64,
 }
 impl<T> SplayHeap<T>
-    where T: Ord
+where
+    T: Ord,
 {
     /// Creates an empty `SplayHeap` as a max-heap.
     ///
@@ -216,17 +218,20 @@ impl<T> SplayHeap<T> {
     }
 }
 impl<T> Default for SplayHeap<T>
-    where T: Ord
+where
+    T: Ord,
 {
     fn default() -> Self {
         SplayHeap::new()
     }
 }
 impl<T> std::iter::FromIterator<T> for SplayHeap<T>
-    where T: Ord
+where
+    T: Ord,
 {
     fn from_iter<I>(iter: I) -> Self
-        where I: IntoIterator<Item = T>
+    where
+        I: IntoIterator<Item = T>,
     {
         let mut heap = SplayHeap::new();
         for x in iter {
@@ -250,10 +255,12 @@ impl<'a, T> IntoIterator for &'a SplayHeap<T> {
     }
 }
 impl<T> Extend<T> for SplayHeap<T>
-    where T: Ord
+where
+    T: Ord,
 {
     fn extend<I>(&mut self, iter: I)
-        where I: IntoIterator<Item = T>
+    where
+        I: IntoIterator<Item = T>,
     {
         for x in iter {
             self.push(x);
@@ -261,10 +268,12 @@ impl<T> Extend<T> for SplayHeap<T>
     }
 }
 impl<'a, T> Extend<&'a T> for SplayHeap<T>
-    where T: Copy + 'a + Ord
+where
+    T: Copy + 'a + Ord,
 {
     fn extend<I>(&mut self, iter: I)
-        where I: IntoIterator<Item = &'a T>
+    where
+        I: IntoIterator<Item = &'a T>,
     {
         for x in iter {
             self.push(*x);

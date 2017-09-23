@@ -17,13 +17,15 @@ enum Visit<E> {
 }
 
 pub struct InOrderIter<N>
-    where N: Nodes
+where
+    N: Nodes,
 {
     nodes: N,
     stack: Vec<Visit<N::Entry>>,
 }
 impl<N> InOrderIter<N>
-    where N: Nodes
+where
+    N: Nodes,
 {
     pub fn new(root: MaybeNodeIndex, nodes: N) -> Self {
         InOrderIter {
@@ -33,7 +35,8 @@ impl<N> InOrderIter<N>
     }
 }
 impl<N> Iterator for InOrderIter<N>
-    where N: Nodes
+where
+    N: Nodes,
 {
     type Item = N::Entry;
     fn next(&mut self) -> Option<Self::Item> {
@@ -79,8 +82,10 @@ pub struct OwnedNodes<K, V>(pub Vec<Node<K, V>>);
 impl<K, V> Nodes for OwnedNodes<K, V> {
     type Entry = (K, V);
     fn get_node(&mut self, index: NodeIndex) -> (Self::Entry, MaybeNodeIndex, MaybeNodeIndex) {
-        let n = mem::replace(unsafe { self.0.get_unchecked_mut(index as usize) },
-                             unsafe { mem::zeroed() });
+        let n = mem::replace(
+            unsafe { self.0.get_unchecked_mut(index as usize) },
+            unsafe { mem::zeroed() },
+        );
         let (lft, rgt) = (n.lft(), n.rgt());
         (n.into(), lft, rgt)
     }

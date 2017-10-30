@@ -36,6 +36,7 @@ use vec_like;
 /// assert_eq!(vec!["baz", "foo"], set.into_iter().collect::<Vec<_>>());
 /// ```
 #[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct SplaySet<T> {
     tree: tree_core::Tree<T, ()>,
 }

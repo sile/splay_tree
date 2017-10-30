@@ -30,7 +30,9 @@ impl<T> Iterator for IntoIter<T> {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 struct Item<T>(T, u64);
+
 impl<T> Ord for Item<T>
 where
     T: Ord,
@@ -73,6 +75,7 @@ where
 /// assert_eq!(heap.pop(), None);
 /// ```
 #[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct SplayHeap<T> {
     tree: tree_core::Tree<Item<T>, ()>,
     seq: u64,

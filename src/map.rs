@@ -50,6 +50,7 @@ use iter;
 /// }
 /// ```
 #[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct SplayMap<K, V> {
     tree: tree_core::Tree<K, V>,
 }

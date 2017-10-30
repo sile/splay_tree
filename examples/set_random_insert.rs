@@ -1,5 +1,5 @@
-extern crate splay_tree;
 extern crate rand;
+extern crate splay_tree;
 
 fn main() {
     let mut set = splay_tree::SplaySet::new();

@@ -1,6 +1,6 @@
 [package]
 name = "splay_tree"
-version = "0.2.8"
+version = "0.2.9"
 authors = ["Takeru Ohta <phjgt308@gmail.com>"]
 description = "Splay Tree based Data Structures (map, set, heap)"
 homepage = "https://github.com/sile/splay_tree"
@@ -18,6 +18,7 @@ serde = { version = "1", optional = true,  default-features = false, features = 
 
 [dev-dependencies]
 rand = "0.3"
+serde_json = { version = "1" }
 
 [features]
 std = []

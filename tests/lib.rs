@@ -1,5 +1,7 @@
 extern crate splay_tree;
 extern crate rand;
+#[cfg(feature = "serde")]
+extern crate serde_json;
 
 use std::hash;
 use std::collections::hash_map::DefaultHasher;
@@ -14,6 +16,8 @@ fn hash<T: hash::Hash>(x: &T) -> u64 {
 mod map {
     use splay_tree::SplayMap;
     use super::hash;
+    #[cfg(feature = "serde")]
+    use serde_json::{from_str, to_string};
 
     #[test]
     fn new() {
@@ -166,11 +170,26 @@ mod map {
         }
         assert!(map.is_empty());
     }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn map_serde() {
+        use rand::{self, Rng};
+
+        let mut input = (0..1000).into_iter().collect::<Vec<_>>();
+        rand::thread_rng().shuffle(&mut input);
+
+        let map: SplayMap<_, _> = input.into_iter().map(|n| (n, n)).collect();
+        let ser_map: SplayMap<_, _> = from_str(&to_string(&map).unwrap()).unwrap();
+        assert_eq!(ser_map, map);
+    }
 }
 
 mod set {
     use splay_tree::SplaySet;
     use super::hash;
+    #[cfg(feature = "serde")]
+    use serde_json::{from_str, to_string};
 
     #[test]
     fn new() {
@@ -371,10 +390,25 @@ mod set {
         }
         assert_eq!(set.iter().cloned().collect::<Vec<_>>(), [3, 7, 10]);
     }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn set_serde() {
+        use rand::{self, Rng};
+
+        let mut input = (0..1000).into_iter().collect::<Vec<_>>();
+        rand::thread_rng().shuffle(&mut input);
+
+        let set: SplaySet<_> = input.into_iter().collect();
+        let ser_set: SplaySet<_> = from_str(&to_string(&set).unwrap()).unwrap();
+        assert_eq!(ser_set, set);
+    }
 }
 
 mod heap {
     use splay_tree::SplayHeap;
+    #[cfg(feature = "serde")]
+    use serde_json::{from_str, to_string};
 
     #[test]
     fn new() {
@@ -448,5 +482,19 @@ mod heap {
         while let Some(n) = heap.pop() {
             assert_eq!(n, heap.len());
         }
+    }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn heap_serde() {
+        use rand::{self, Rng};
+        use std::iter::FromIterator;
+
+        let mut input = (0..1000).into_iter().collect::<Vec<_>>();
+        rand::thread_rng().shuffle(&mut input);
+
+        let heap: SplayHeap<_> = input.into_iter().collect();
+        let ser_heap: SplayHeap<u64> = from_str(&to_string(&heap).unwrap()).unwrap();
+        assert_eq!(Vec::from_iter(ser_heap), Vec::from_iter(heap));
     }
 }

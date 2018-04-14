@@ -37,17 +37,21 @@ use iter;
 /// `SplayMap` implements an [Entry API](#method.entry) which allows for
 /// more complex methods of getting, setting, updating and removing keys and their values:
 /// ```
-/// use splay_tree::SplayMap;
-/// use rand;
+/// extern crate rand;
+/// extern crate splay_tree;
 ///
+/// use splay_tree::SplayMap;
+///
+/// # fn main() {
 /// let mut count = SplayMap::new();
 /// for _ in 0..1000 {
 ///     let k = rand::random::<u8>();
 ///     *count.entry(k).or_insert(0) += 1;
 /// }
 /// for k in 0..0x100 {
-///     prinln!("{}: {}", counter.get(&k).unwrap_or(0));
+///     println!("{}: {}", k, count.get(&k).unwrap_or(&0));
 /// }
+/// # }
 /// ```
 #[derive(Debug, Clone, Hash, PartialEq, Eq, PartialOrd, Ord)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]

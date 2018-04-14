@@ -54,7 +54,9 @@ where
     /// assert!(set.is_empty());
     /// ```
     pub fn new() -> Self {
-        SplaySet { tree: tree_core::Tree::new() }
+        SplaySet {
+            tree: tree_core::Tree::new(),
+        }
     }
 
     /// Clears the set, removing all values.
@@ -849,7 +851,9 @@ pub struct VecLike<'a, T: 'a> {
 }
 impl<'a, T: 'a> VecLike<'a, T> {
     fn new(tree: &'a tree_core::Tree<T, ()>) -> Self {
-        VecLike { inner: vec_like::VecLike::new(tree) }
+        VecLike {
+            inner: vec_like::VecLike::new(tree),
+        }
     }
 
     /// Returns the element of the vector at the given index,
@@ -1054,7 +1058,9 @@ where
 }
 impl<'a, T: 'a> VecLikeMut<'a, T> {
     fn new(tree: &'a mut tree_core::Tree<T, ()>) -> Self {
-        VecLikeMut { inner: vec_like::VecLikeMut::new(tree) }
+        VecLikeMut {
+            inner: vec_like::VecLikeMut::new(tree),
+        }
     }
 
     /// Returns the element of the vector at the given index,

@@ -73,7 +73,9 @@ where
     /// assert_eq!(map.len(), 1);
     /// ```
     pub fn new() -> Self {
-        SplayMap { tree: tree_core::Tree::new() }
+        SplayMap {
+            tree: tree_core::Tree::new(),
+        }
     }
 
     /// Clears the map, removing all values.
@@ -342,7 +344,9 @@ where
     /// ```
     pub fn entry(&mut self, key: K) -> Entry<K, V> {
         if self.contains_key(&key) {
-            Entry::Occupied(OccupiedEntry { tree: &mut self.tree })
+            Entry::Occupied(OccupiedEntry {
+                tree: &mut self.tree,
+            })
         } else {
             Entry::Vacant(VacantEntry {
                 key: key,

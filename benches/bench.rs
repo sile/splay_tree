@@ -28,7 +28,9 @@ fn get_middle_splay(b: &mut test::Bencher, num: u32) {
         map.insert(i, i);
     }
     let middle = num / 2;
-    b.iter(|| { test::black_box(map.get(&middle)); })
+    b.iter(|| {
+        test::black_box(map.get(&middle));
+    })
 }
 
 fn get_none_splay(b: &mut test::Bencher, num: u32) {
@@ -37,7 +39,9 @@ fn get_none_splay(b: &mut test::Bencher, num: u32) {
         map.insert(i, i);
     }
     let none = num + 1;
-    b.iter(|| { test::black_box(map.get(&none)); })
+    b.iter(|| {
+        test::black_box(map.get(&none));
+    })
 }
 
 #[bench]

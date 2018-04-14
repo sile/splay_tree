@@ -424,12 +424,10 @@ where
                 (None, None) => return Some(cmp::Ordering::Equal),
                 (None, _) => return Some(cmp::Ordering::Less),
                 (_, None) => return Some(cmp::Ordering::Greater),
-                (Some(e0), Some(e1)) => {
-                    match e0.partial_cmp(&e1) {
-                        Some(cmp::Ordering::Equal) => {}
-                        not_equal => return not_equal,
-                    }
-                }
+                (Some(e0), Some(e1)) => match e0.partial_cmp(&e1) {
+                    Some(cmp::Ordering::Equal) => {}
+                    not_equal => return not_equal,
+                },
             }
         }
     }
@@ -447,12 +445,10 @@ where
                 (None, None) => return cmp::Ordering::Equal,
                 (None, _) => return cmp::Ordering::Less,
                 (_, None) => return cmp::Ordering::Greater,
-                (Some(e0), Some(e1)) => {
-                    match e0.cmp(&e1) {
-                        cmp::Ordering::Equal => {}
-                        not_equal => return not_equal,
-                    }
-                }
+                (Some(e0), Some(e1)) => match e0.cmp(&e1) {
+                    cmp::Ordering::Equal => {}
+                    not_equal => return not_equal,
+                },
             }
         }
     }

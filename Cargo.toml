@@ -17,7 +17,7 @@ codecov = {repository = "sile/splay_tree"}
 serde = { version = "1", optional = true,  default-features = false, features = ["alloc", "derive"] }
 
 [dev-dependencies]
-rand = "0.4"
+rand = "0.5"
 serde_json = { version = "1" }
 
 [features]

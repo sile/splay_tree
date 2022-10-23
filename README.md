@@ -1,7 +1,7 @@
 splay_tree
 ==========
 
-[![](http://meritbadge.herokuapp.com/splay_tree)](https://crates.io/crates/splay_tree)
+[![](https://img.shields.io/crates/v/splay_tree.svg)](https://crates.io/crates/splay_tree)
 [![Documentation](https://docs.rs/splay_tree/badge.svg)](https://docs.rs/splay_tree)
 [![Build Status](https://travis-ci.org/sile/splay_tree.svg?branch=master)](https://travis-ci.org/sile/splay_tree)
 [![Code Coverage](https://codecov.io/gh/sile/splay_tree/branch/master/graph/badge.svg)](https://codecov.io/gh/sile/splay_tree/branch/master)

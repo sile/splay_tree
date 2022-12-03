@@ -48,7 +48,7 @@ use tree_core;
 ///     let k = rand::random::<u8>();
 ///     *count.entry(k).or_insert(0) += 1;
 /// }
-/// for k in 0..0x100 {
+/// for k in 0..=255 {
 ///     println!("{}: {}", k, count.get(&k).unwrap_or(&0));
 /// }
 /// # }
@@ -349,7 +349,7 @@ where
             })
         } else {
             Entry::Vacant(VacantEntry {
-                key: key,
+                key,
                 tree: &mut self.tree,
             })
         }

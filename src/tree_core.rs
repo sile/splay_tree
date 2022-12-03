@@ -21,13 +21,8 @@ pub struct Node<K, V> {
     pub val: V,
 }
 impl<K, V> Node<K, V> {
-    pub fn new(key: K, value: V, lft: NodeIndex, rgt: NodeIndex) -> Self {
-        Node {
-            key: key,
-            val: value,
-            lft: lft,
-            rgt: rgt,
-        }
+    pub fn new(key: K, val: V, lft: NodeIndex, rgt: NodeIndex) -> Self {
+        Node { key, val, lft, rgt }
     }
     pub fn rgt(&self) -> Option<NodeIndex> {
         if self.rgt != NULL_NODE {
@@ -44,19 +39,19 @@ impl<K, V> Node<K, V> {
         }
     }
 }
-impl<K, V> Into<(K, V)> for Node<K, V> {
-    fn into(self) -> (K, V) {
-        (self.key, self.val)
+impl<K, V> From<Node<K, V>> for (K, V) {
+    fn from(t: Node<K, V>) -> Self {
+        (t.key, t.val)
     }
 }
-impl<'a, K, V> Into<(&'a K, &'a V)> for &'a Node<K, V> {
-    fn into(self) -> (&'a K, &'a V) {
-        (&self.key, &self.val)
+impl<'a, K, V> From<&'a Node<K, V>> for (&'a K, &'a V) {
+    fn from(t: &'a Node<K, V>) -> Self {
+        (&t.key, &t.val)
     }
 }
-impl<'a, K, V> Into<(&'a K, &'a mut V)> for &'a mut Node<K, V> {
-    fn into(self) -> (&'a K, &'a mut V) {
-        (&self.key, &mut self.val)
+impl<'a, K, V> From<&'a mut Node<K, V>> for (&'a K, &'a mut V) {
+    fn from(t: &'a mut Node<K, V>) -> Self {
+        (&t.key, &mut t.val)
     }
 }
 
@@ -356,7 +351,7 @@ impl<K, V> Tree<K, V> {
     pub fn node_mut(&mut self, i: NodeIndex) -> &mut Node<K, V> {
         unsafe { self.nodes.get_unchecked_mut(i as usize) }
     }
-    unsafe fn aliasable_node_mut<'a, 'b>(&'a mut self, i: NodeIndex) -> &'b mut Node<K, V> {
+    unsafe fn aliasable_node_mut<'a>(&mut self, i: NodeIndex) -> &'a mut Node<K, V> {
         &mut *(self.node_mut(i) as *mut _)
     }
     pub fn len(&self) -> usize {
@@ -373,7 +368,10 @@ impl<K, V> Tree<K, V> {
         iter::InOrderIter::new(self.root(), &mut self.nodes)
     }
     pub fn into_iter(self) -> iter::IntoIter<K, V> {
-        iter::InOrderIter::new(self.root(), iter::OwnedNodes(self.nodes))
+        iter::InOrderIter::new(
+            self.root(),
+            iter::OwnedNodes(self.nodes.into_iter().map(Some).collect()),
+        )
     }
     pub fn nodes_iter(&self) -> slice::Iter<Node<K, V>> {
         self.nodes.iter()

@@ -29,7 +29,7 @@ where
 {
     pub fn new(root: MaybeNodeIndex, nodes: N) -> Self {
         InOrderIter {
-            nodes: nodes,
+            nodes,
             stack: root.map(Visit::Node).into_iter().collect(),
         }
     }
@@ -44,9 +44,13 @@ where
             match v {
                 Visit::Node(n) => {
                     let (e, lft, rgt) = self.nodes.get_node(n);
-                    rgt.map(|rgt| self.stack.push(Visit::Node(rgt)));
+                    if let Some(rgt) = rgt {
+                        self.stack.push(Visit::Node(rgt))
+                    }
                     self.stack.push(Visit::Elem(e));
-                    lft.map(|lft| self.stack.push(Visit::Node(lft)));
+                    if let Some(lft) = lft {
+                        self.stack.push(Visit::Node(lft))
+                    }
                 }
                 Visit::Elem(e) => {
                     return Some(e);
@@ -78,14 +82,11 @@ impl<'a, K: 'a, V: 'a> Nodes for &'a mut [Node<K, V>] {
 }
 
 pub type IntoIter<K, V> = InOrderIter<OwnedNodes<K, V>>;
-pub struct OwnedNodes<K, V>(pub Vec<Node<K, V>>);
+pub struct OwnedNodes<K, V>(pub(crate) Vec<Option<Node<K, V>>>);
 impl<K, V> Nodes for OwnedNodes<K, V> {
     type Entry = (K, V);
     fn get_node(&mut self, index: NodeIndex) -> (Self::Entry, MaybeNodeIndex, MaybeNodeIndex) {
-        let n = mem::replace(
-            unsafe { self.0.get_unchecked_mut(index as usize) },
-            unsafe { mem::zeroed() },
-        );
+        let n = mem::take(self.0.get_mut(index as usize).expect("bug")).expect("bug");
         let (lft, rgt) = (n.lft(), n.rgt());
         (n.into(), lft, rgt)
     }
@@ -93,7 +94,7 @@ impl<K, V> Nodes for OwnedNodes<K, V> {
 impl<K, V> Drop for OwnedNodes<K, V> {
     fn drop(&mut self) {
         let is_sentinel = |n: &Node<_, _>| n.lft().is_some() && n.lft() == n.rgt();
-        for e in mem::replace(&mut self.0, Vec::new()) {
+        for e in self.0.drain(..).flatten() {
             if is_sentinel(&e) {
                 mem::forget(e);
             }

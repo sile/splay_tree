@@ -82,6 +82,13 @@ where
             order == Ordering::Equal
         })
     }
+    pub fn contains_key_immut<Q: ?Sized>(&self, key: &Q) -> bool
+    where
+        K: Borrow<Q>,
+        Q: Ord,
+    {
+        self.get_immut(key).is_some()
+    }
     pub fn find_lower_bound<Q: ?Sized>(&mut self, key: &Q) -> Option<&K>
     where
         K: Borrow<Q>,
@@ -89,12 +96,29 @@ where
     {
         self.find_bound(|k| key.cmp(k.borrow()))
     }
+    pub fn find_lower_bound_immut<Q: ?Sized>(&self, key: &Q) -> Option<&K>
+    where
+        K: Borrow<Q>,
+        Q: Ord,
+    {
+        self.find_bound_immut(|k| key.cmp(k.borrow()))
+    }
     pub fn find_upper_bound<Q: ?Sized>(&mut self, key: &Q) -> Option<&K>
     where
         K: Borrow<Q>,
         Q: Ord,
     {
         self.find_bound(|k| match key.cmp(k.borrow()) {
+            Ordering::Equal => Ordering::Greater,
+            other => other,
+        })
+    }
+    pub fn find_upper_bound_immut<Q: ?Sized>(&self, key: &Q) -> Option<&K>
+    where
+        K: Borrow<Q>,
+        Q: Ord,
+    {
+        self.find_bound_immut(|k| match key.cmp(k.borrow()) {
             Ordering::Equal => Ordering::Greater,
             other => other,
         })
@@ -109,6 +133,39 @@ where
         } else {
             None
         }
+    }
+    pub fn get_immut<Q: ?Sized>(&self, key: &Q) -> Option<(&K, &V)>
+    where
+        K: Borrow<Q>,
+        Q: Ord,
+    {
+        let mut index = self.root();
+        while let Some(node) = index.map(|i| self.node_ref(i)) {
+            match key.cmp(node.key.borrow()) {
+                Ordering::Equal => return Some((&node.key, &node.val)),
+                Ordering::Less => index = node.lft(),
+                Ordering::Greater => index = node.rgt(),
+            }
+        }
+        None
+    }
+    pub fn find_bound_immut<F>(&self, cmp: F) -> Option<&K>
+    where
+        F: Fn(&K) -> Ordering,
+    {
+        let mut index = self.root();
+        let mut candidate = None;
+        while let Some(node) = index.map(|i| self.node_ref(i)) {
+            match cmp(&node.key) {
+                Ordering::Equal => return Some(&node.key),
+                Ordering::Less => {
+                    candidate = Some(&node.key);
+                    index = node.lft();
+                }
+                Ordering::Greater => index = node.rgt(),
+            }
+        }
+        candidate
     }
     pub fn insert(&mut self, key: K, value: V) -> Option<V> {
         if let Some(root) = self.root() {
@@ -166,6 +223,14 @@ where
             self.root_ref().into()
         })
     }
+    pub fn get_lftmost_immut(&self) -> Option<(&K, &V)> {
+        self.root().map(|i| self.node_ref(i)).map(|mut node| {
+            while let Some(next) = node.lft().map(|i| self.node_ref(i)) {
+                node = next;
+            }
+            (&node.key, &node.val)
+        })
+    }
     pub fn take_lftmost(&mut self) -> Option<(K, V)> {
         self.root().map(|root| {
             self.root = self.splay_lftmost(root);
@@ -176,6 +241,14 @@ where
         self.root().map(move |root| {
             self.root = self.splay_rgtmost(root);
             self.root_ref().into()
+        })
+    }
+    pub fn get_rgtmost_immut(&self) -> Option<(&K, &V)> {
+        self.root().map(|i| self.node_ref(i)).map(|mut node| {
+            while let Some(next) = node.rgt().map(|i| self.node_ref(i)) {
+                node = next;
+            }
+            (&node.key, &node.val)
         })
     }
     pub fn take_rgtmost(&mut self) -> Option<(K, V)> {

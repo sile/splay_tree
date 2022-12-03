@@ -195,7 +195,7 @@ where
         self.tree.find_lower_bound(value)
     }
 
-    /// Immutable version of [`SplaySet::find_lower_bound_immut()`].
+    /// Immutable version of [`SplaySet::find_lower_bound()`].
     ///
     /// Note that this method could be less efficient than the mutable version.
     ///
@@ -244,7 +244,7 @@ where
         self.tree.find_upper_bound(value)
     }
 
-    /// Immutable version of [`SplaySet::find_upper_bound_immut()`].
+    /// Immutable version of [`SplaySet::find_upper_bound()`].
     ///
     /// Note that this method could be less efficient than the mutable version.
     ///
@@ -284,7 +284,7 @@ where
         self.tree.get_lftmost().map(|(v, _)| v)
     }
 
-    /// Immutable version of [`SplaySet::smallest_immut()`].
+    /// Immutable version of [`SplaySet::smallest()`].
     ///
     /// Note that this method could be less efficient than the mutable version.
     ///
@@ -336,7 +336,7 @@ where
         self.tree.get_rgtmost().map(|(v, _)| v)
     }
 
-    /// Immutable version of [`SplaySet::smallest_immut()`].
+    /// Immutable version of [`SplaySet::largest()`].
     ///
     /// Note that this method could be less efficient than the mutable version.
     ///

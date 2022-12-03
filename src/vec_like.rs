@@ -1,6 +1,6 @@
+use crate::tree_core;
 use std::borrow::Borrow;
 use std::slice;
-use tree_core;
 
 #[derive(Debug, Clone)]
 pub struct VecLike<'a, K: 'a, V: 'a> {

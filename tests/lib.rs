@@ -1,8 +1,4 @@
-extern crate rand;
-#[cfg(feature = "serde")]
-extern crate serde_json;
-extern crate splay_tree;
-
+use rand::seq::SliceRandom;
 use std::collections::hash_map::DefaultHasher;
 use std::hash;
 
@@ -14,7 +10,7 @@ fn hash<T: hash::Hash>(x: &T) -> u64 {
 }
 
 mod map {
-    use super::hash;
+    use super::*;
     #[cfg(feature = "serde")]
     use serde_json::{from_str, to_string};
     use splay_tree::SplayMap;
@@ -94,9 +90,8 @@ mod map {
         assert_eq!(map.find_upper_bound_key("zzz"), None);
 
         // large map
-        use rand::{self, Rng};
         let mut input = (0..1000).into_iter().collect::<Vec<_>>();
-        rand::thread_rng().shuffle(&mut input);
+        input.shuffle(&mut rand::thread_rng());
 
         let mut map: SplayMap<_, _> = input.into_iter().map(|n| (n, n)).collect();
         assert_eq!(map.find_lower_bound_key(&500), Some(&500));
@@ -159,10 +154,8 @@ mod map {
 
     #[test]
     fn large_map() {
-        use rand::{self, Rng};
-
         let mut input = (0..1000).into_iter().collect::<Vec<_>>();
-        rand::thread_rng().shuffle(&mut input);
+        input.shuffle(&mut rand::thread_rng());
 
         let mut map: SplayMap<_, _> = input.into_iter().map(|n| (n, n)).collect();
         for i in 0..1000 {
@@ -174,10 +167,8 @@ mod map {
     #[cfg(feature = "serde")]
     #[test]
     fn map_serde() {
-        use rand::{self, Rng};
-
         let mut input = (0..1000).into_iter().collect::<Vec<_>>();
-        rand::thread_rng().shuffle(&mut input);
+        input.shuffle(&mut rand::thread_rng());
 
         let map: SplayMap<_, _> = input.into_iter().map(|n| (n, n)).collect();
         let ser_map: SplayMap<_, _> = from_str(&to_string(&map).unwrap()).unwrap();
@@ -186,7 +177,7 @@ mod map {
 }
 
 mod set {
-    use super::hash;
+    use super::*;
     #[cfg(feature = "serde")]
     use serde_json::{from_str, to_string};
     use splay_tree::SplaySet;
@@ -261,9 +252,8 @@ mod set {
         assert_eq!(set.find_upper_bound("zzz"), None);
 
         // large set
-        use rand::{self, Rng};
         let mut input = (0..1000).into_iter().collect::<Vec<_>>();
-        rand::thread_rng().shuffle(&mut input);
+        input.shuffle(&mut rand::thread_rng());
 
         let mut set: SplaySet<_> = input.into_iter().collect();
         assert_eq!(set.find_lower_bound(&500), Some(&500));
@@ -315,10 +305,8 @@ mod set {
 
     #[test]
     fn large_set() {
-        use rand::{self, Rng};
-
         let mut input = (0..1000).collect::<Vec<_>>();
-        rand::thread_rng().shuffle(&mut input);
+        input.shuffle(&mut rand::thread_rng());
 
         let mut set: SplaySet<_> = input.iter().cloned().collect();
         for i in input {
@@ -394,10 +382,8 @@ mod set {
     #[cfg(feature = "serde")]
     #[test]
     fn set_serde() {
-        use rand::{self, Rng};
-
         let mut input = (0..1000).into_iter().collect::<Vec<_>>();
-        rand::thread_rng().shuffle(&mut input);
+        input.shuffle(&mut rand::thread_rng());
 
         let set: SplaySet<_> = input.into_iter().collect();
         let ser_set: SplaySet<_> = from_str(&to_string(&set).unwrap()).unwrap();
@@ -406,6 +392,7 @@ mod set {
 }
 
 mod heap {
+    use super::*;
     #[cfg(feature = "serde")]
     use serde_json::{from_str, to_string};
     use splay_tree::SplayHeap;
@@ -473,10 +460,8 @@ mod heap {
 
     #[test]
     fn large_heap() {
-        use rand::{self, Rng};
-
         let mut input = (0..1000).into_iter().collect::<Vec<_>>();
-        rand::thread_rng().shuffle(&mut input);
+        input.shuffle(&mut rand::thread_rng());
 
         let mut heap = input.into_iter().collect::<SplayHeap<_>>();
         while let Some(n) = heap.pop() {
@@ -487,11 +472,10 @@ mod heap {
     #[cfg(feature = "serde")]
     #[test]
     fn heap_serde() {
-        use rand::{self, Rng};
         use std::iter::FromIterator;
 
         let mut input = (0..1000).into_iter().collect::<Vec<_>>();
-        rand::thread_rng().shuffle(&mut input);
+        input.shuffle(&mut rand::thread_rng());
 
         let heap: SplayHeap<_> = input.into_iter().collect();
         let ser_heap: SplayHeap<u64> = from_str(&to_string(&heap).unwrap()).unwrap();

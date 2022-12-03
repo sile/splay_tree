@@ -1,9 +1,8 @@
 //! A map based on a splay tree.
-use iter;
-use std;
+use crate::iter;
+use crate::tree_core;
 use std::borrow::Borrow;
 use std::mem;
-use tree_core;
 
 /// A map based on a splay tree.
 ///
@@ -37,9 +36,6 @@ use tree_core;
 /// `SplayMap` implements an [Entry API](#method.entry) which allows for
 /// more complex methods of getting, setting, updating and removing keys and their values:
 /// ```
-/// extern crate rand;
-/// extern crate splay_tree;
-///
 /// use splay_tree::SplayMap;
 ///
 /// # fn main() {

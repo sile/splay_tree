@@ -1,8 +1,8 @@
 //! Iterators for splay tree
+use crate::tree_core::Node;
+use crate::tree_core::NodeIndex;
 use std::mem;
 use std::vec::Vec;
-use tree_core::Node;
-use tree_core::NodeIndex;
 
 pub type MaybeNodeIndex = Option<NodeIndex>;
 

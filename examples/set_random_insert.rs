@@ -1,6 +1,3 @@
-extern crate rand;
-extern crate splay_tree;
-
 fn main() {
     let mut set = splay_tree::SplaySet::new();
     for _ in 0..1_000_000 {

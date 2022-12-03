@@ -8,7 +8,7 @@ pub struct VecLike<'a, K: 'a, V: 'a> {
 }
 impl<'a, K: 'a, V: 'a> VecLike<'a, K, V> {
     pub fn new(tree: &'a tree_core::Tree<K, V>) -> Self {
-        VecLike { tree: tree }
+        VecLike { tree }
     }
     pub fn len(&self) -> usize {
         self.tree.len()
@@ -65,7 +65,7 @@ where
 }
 impl<'a, K: 'a, V: 'a> VecLikeMut<'a, K, V> {
     pub fn new(tree: &'a mut tree_core::Tree<K, V>) -> Self {
-        VecLikeMut { tree: tree }
+        VecLikeMut { tree }
     }
     pub fn len(&self) -> usize {
         self.tree.len()

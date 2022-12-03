@@ -29,9 +29,22 @@ impl<T> Iterator for IntoIter<T> {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 struct Item<T>(T, u64);
+
+impl<T> PartialOrd for Item<T>
+where
+    T: PartialOrd,
+{
+    fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
+        self.0.partial_cmp(&other.0).map(|order| match order {
+            cmp::Ordering::Equal => self.1.cmp(&other.1),
+            cmp::Ordering::Less => cmp::Ordering::Greater,
+            cmp::Ordering::Greater => cmp::Ordering::Less,
+        })
+    }
+}
 
 impl<T> Ord for Item<T>
 where

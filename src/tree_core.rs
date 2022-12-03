@@ -21,13 +21,8 @@ pub struct Node<K, V> {
     pub val: V,
 }
 impl<K, V> Node<K, V> {
-    pub fn new(key: K, value: V, lft: NodeIndex, rgt: NodeIndex) -> Self {
-        Node {
-            key: key,
-            val: value,
-            lft: lft,
-            rgt: rgt,
-        }
+    pub fn new(key: K, val: V, lft: NodeIndex, rgt: NodeIndex) -> Self {
+        Node { key, val, lft, rgt }
     }
     pub fn rgt(&self) -> Option<NodeIndex> {
         if self.rgt != NULL_NODE {
@@ -44,19 +39,19 @@ impl<K, V> Node<K, V> {
         }
     }
 }
-impl<K, V> Into<(K, V)> for Node<K, V> {
-    fn into(self) -> (K, V) {
-        (self.key, self.val)
+impl<K, V> From<Node<K, V>> for (K, V) {
+    fn from(t: Node<K, V>) -> Self {
+        (t.key, t.val)
     }
 }
-impl<'a, K, V> Into<(&'a K, &'a V)> for &'a Node<K, V> {
-    fn into(self) -> (&'a K, &'a V) {
-        (&self.key, &self.val)
+impl<'a, K, V> From<&'a Node<K, V>> for (&'a K, &'a V) {
+    fn from(t: &'a Node<K, V>) -> Self {
+        (&t.key, &t.val)
     }
 }
-impl<'a, K, V> Into<(&'a K, &'a mut V)> for &'a mut Node<K, V> {
-    fn into(self) -> (&'a K, &'a mut V) {
-        (&self.key, &mut self.val)
+impl<'a, K, V> From<&'a mut Node<K, V>> for (&'a K, &'a mut V) {
+    fn from(t: &'a mut Node<K, V>) -> Self {
+        (&t.key, &mut t.val)
     }
 }
 

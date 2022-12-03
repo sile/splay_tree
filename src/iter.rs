@@ -29,7 +29,7 @@ where
 {
     pub fn new(root: MaybeNodeIndex, nodes: N) -> Self {
         InOrderIter {
-            nodes: nodes,
+            nodes,
             stack: root.map(Visit::Node).into_iter().collect(),
         }
     }
@@ -44,9 +44,13 @@ where
             match v {
                 Visit::Node(n) => {
                     let (e, lft, rgt) = self.nodes.get_node(n);
-                    rgt.map(|rgt| self.stack.push(Visit::Node(rgt)));
+                    if let Some(rgt) = rgt {
+                        self.stack.push(Visit::Node(rgt))
+                    }
                     self.stack.push(Visit::Elem(e));
-                    lft.map(|lft| self.stack.push(Visit::Node(lft)));
+                    if let Some(lft) = lft {
+                        self.stack.push(Visit::Node(lft))
+                    }
                 }
                 Visit::Elem(e) => {
                     return Some(e);
@@ -90,11 +94,9 @@ impl<K, V> Nodes for OwnedNodes<K, V> {
 impl<K, V> Drop for OwnedNodes<K, V> {
     fn drop(&mut self) {
         let is_sentinel = |n: &Node<_, _>| n.lft().is_some() && n.lft() == n.rgt();
-        for e in self.0.drain(..) {
-            if let Some(e) = e {
-                if is_sentinel(&e) {
-                    mem::forget(e);
-                }
+        for e in self.0.drain(..).flatten() {
+            if is_sentinel(&e) {
+                mem::forget(e);
             }
         }
     }

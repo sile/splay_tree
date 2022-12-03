@@ -830,15 +830,13 @@ where
 {
     type Item = &'a T;
     fn next(&mut self) -> Option<Self::Item> {
-        loop {
-            match item_cmp(self.0.peek(), self.1.peek()) {
-                None => return None,
-                Some(cmp::Ordering::Less) => return self.0.next(),
-                Some(cmp::Ordering::Greater) => return self.1.next(),
-                Some(cmp::Ordering::Equal) => {
-                    self.0.next();
-                    return self.1.next();
-                }
+        match item_cmp(self.0.peek(), self.1.peek()) {
+            None => None,
+            Some(cmp::Ordering::Less) => self.0.next(),
+            Some(cmp::Ordering::Greater) => self.1.next(),
+            Some(cmp::Ordering::Equal) => {
+                self.0.next();
+                self.1.next()
             }
         }
     }

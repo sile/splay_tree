@@ -349,7 +349,7 @@ where
             })
         } else {
             Entry::Vacant(VacantEntry {
-                key: key,
+                key,
                 tree: &mut self.tree,
             })
         }

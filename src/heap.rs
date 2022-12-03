@@ -134,6 +134,25 @@ where
         self.tree.get_lftmost().map(|(i, _)| &i.0)
     }
 
+    /// Immutable version of [`SplayHeap::peek()`].
+    ///
+    /// Note that this method could be less efficient than the mutable version.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplayHeap;
+    /// let mut heap = SplayHeap::new();
+    /// assert_eq!(heap.peek_immut(), None);
+    ///
+    /// heap.push(1);
+    /// heap.push(5);
+    /// heap.push(2);
+    /// assert_eq!(heap.peek_immut(), Some(&5));
+    /// ```
+    pub fn peek_immut(&self) -> Option<&T> {
+        self.tree.get_lftmost_immut().map(|(i, _)| &i.0)
+    }
+
     /// Removes the greatest item from the heap and returns it, or `None` if it is empty.
     ///
     /// # Examples

@@ -116,6 +116,27 @@ where
         self.tree.contains_key(key)
     }
 
+    /// Immutable version of [`SplayMap::contains_key()`].
+    ///
+    /// Note that this method could be less efficient than the mutable version.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplayMap;
+    ///
+    /// let mut map = SplayMap::new();
+    /// map.insert("foo", 1);
+    /// assert!(map.contains_key_immut("foo"));
+    /// assert!(!map.contains_key_immut("bar"));
+    /// ```
+    pub fn contains_key_immut<Q: ?Sized>(&self, key: &Q) -> bool
+    where
+        K: Borrow<Q>,
+        Q: Ord,
+    {
+        self.tree.contains_key_immut(key)
+    }
+
     /// Returns a reference to the value corresponding to the key.
     ///
     /// The key may be any borrowed form of the map's key type,
@@ -141,6 +162,27 @@ where
         Q: Ord,
     {
         self.get_mut(key).map(|v| &*v)
+    }
+
+    /// Immutable version of [`SplayMap::get()`].
+    ///
+    /// Note that this method could be less efficient than the mutable version.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplayMap;
+    ///
+    /// let mut map = SplayMap::new();
+    /// map.insert("foo", 1);
+    /// assert_eq!(map.get_immut("foo"), Some(&1));
+    /// assert_eq!(map.get_immut("bar"), None);
+    /// ```
+    pub fn get_immut<Q: ?Sized>(&self, key: &Q) -> Option<&V>
+    where
+        K: Borrow<Q>,
+        Q: Ord,
+    {
+        self.tree.get_immut(key).map(|(_, v)| v)
     }
 
     /// Returns a mutable reference to the value corresponding to the key.
@@ -187,6 +229,30 @@ where
         self.tree.find_lower_bound(key)
     }
 
+    /// Immutable version of [`SplayMap::find_lower_bound_key()`].
+    ///
+    /// Note that this method could be less efficient than the mutable version.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplayMap;
+    ///
+    /// let mut map = SplayMap::new();
+    /// map.insert(1, ());
+    /// map.insert(3, ());
+    ///
+    /// assert_eq!(map.find_lower_bound_key_immut(&0), Some(&1));
+    /// assert_eq!(map.find_lower_bound_key_immut(&1), Some(&1));
+    /// assert_eq!(map.find_lower_bound_key_immut(&4), None);
+    /// ```
+    pub fn find_lower_bound_key_immut<Q: ?Sized>(&self, key: &Q) -> Option<&K>
+    where
+        K: Borrow<Q>,
+        Q: Ord,
+    {
+        self.tree.find_lower_bound_immut(key)
+    }
+
     /// Finds a minimum key which satisfies "greater than `key`" condition in the map.
     ///
     /// # Examples
@@ -209,6 +275,30 @@ where
         self.tree.find_upper_bound(key)
     }
 
+    /// Immutable version of [`SplayMap::find_upper_bound_key()`].
+    ///
+    /// Note that this method could be less efficient than the mutable version.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplayMap;
+    ///
+    /// let mut map = SplayMap::new();
+    /// map.insert(1, ());
+    /// map.insert(3, ());
+    ///
+    /// assert_eq!(map.find_upper_bound_key_immut(&0), Some(&1));
+    /// assert_eq!(map.find_upper_bound_key_immut(&1), Some(&3));
+    /// assert_eq!(map.find_upper_bound_key_immut(&4), None);
+    /// ```
+    pub fn find_upper_bound_key_immut<Q: ?Sized>(&self, key: &Q) -> Option<&K>
+    where
+        K: Borrow<Q>,
+        Q: Ord,
+    {
+        self.tree.find_upper_bound_immut(key)
+    }
+
     /// Gets the entry which have the minimum key in the map.
     ///
     /// # Examples
@@ -223,6 +313,24 @@ where
     /// ```
     pub fn smallest(&mut self) -> Option<(&K, &V)> {
         self.tree.get_lftmost()
+    }
+
+    /// Immutable version of [`SplayMap::smallest()`].
+    ///
+    /// Note that this method could be less efficient than the mutable version.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplayMap;
+    ///
+    /// let mut map = SplayMap::new();
+    /// map.insert(1, ());
+    /// map.insert(3, ());
+    ///
+    /// assert_eq!(map.smallest_immut(), Some((&1, &())));
+    /// ```
+    pub fn smallest_immut(&self) -> Option<(&K, &V)> {
+        self.tree.get_lftmost_immut()
     }
 
     /// Takes the entry which have the minimum key in the map.
@@ -257,6 +365,24 @@ where
     /// ```
     pub fn largest(&mut self) -> Option<(&K, &V)> {
         self.tree.get_rgtmost()
+    }
+
+    /// Immutable version of [`SplayMap::largest()`].
+    ///
+    /// Note that this method could be less efficient than the mutable version.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplayMap;
+    ///
+    /// let mut map = SplayMap::new();
+    /// map.insert(1, ());
+    /// map.insert(3, ());
+    ///
+    /// assert_eq!(map.largest_immut(), Some((&3, &())));
+    /// ```
+    pub fn largest_immut(&self) -> Option<(&K, &V)> {
+        self.tree.get_rgtmost_immut()
     }
 
     /// Takes the entry which have the maximum key in the map.

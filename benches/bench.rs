@@ -1,8 +1,5 @@
 #![feature(test)]
 
-extern crate splay_tree;
-extern crate test;
-
 use splay_tree::SplayMap;
 
 const SMALL: u32 = 10;

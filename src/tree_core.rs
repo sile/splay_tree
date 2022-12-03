@@ -1,5 +1,5 @@
 //! In-place top-down splay tree implementation
-use iter;
+use crate::iter;
 use std::borrow::Borrow;
 use std::cmp;
 use std::cmp::Ordering;

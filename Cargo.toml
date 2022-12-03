@@ -8,6 +8,7 @@ repository = "https://github.com/sile/splay_tree"
 readme = "README.md"
 categories = ["data-structures", "no-std"]
 license = "MIT"
+edition = "2021"
 
 [badges]
 travis-ci = {repository = "sile/splay_tree"}

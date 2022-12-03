@@ -373,7 +373,10 @@ impl<K, V> Tree<K, V> {
         iter::InOrderIter::new(self.root(), &mut self.nodes)
     }
     pub fn into_iter(self) -> iter::IntoIter<K, V> {
-        iter::InOrderIter::new(self.root(), iter::OwnedNodes(self.nodes))
+        iter::InOrderIter::new(
+            self.root(),
+            iter::OwnedNodes(self.nodes.into_iter().map(Some).collect()),
+        )
     }
     pub fn nodes_iter(&self) -> slice::Iter<Node<K, V>> {
         self.nodes.iter()

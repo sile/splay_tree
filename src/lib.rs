@@ -17,12 +17,12 @@ mod std {
     pub use core::{borrow, cmp, fmt, hash, iter, mem, ops, slice, u32};
 }
 
-mod tree_core;
+pub mod heap;
 mod iter;
-mod vec_like;
 pub mod map;
 pub mod set;
-pub mod heap;
+mod tree_core;
+mod vec_like;
 
 #[doc(inline)]
 pub use map::SplayMap;

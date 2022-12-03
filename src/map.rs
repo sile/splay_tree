@@ -1,9 +1,9 @@
 //! A map based on a splay tree.
-use std;
-use std::mem;
-use std::borrow::Borrow;
-use tree_core;
 use iter;
+use std;
+use std::borrow::Borrow;
+use std::mem;
+use tree_core;
 
 /// A map based on a splay tree.
 ///

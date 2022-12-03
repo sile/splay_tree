@@ -1,8 +1,8 @@
 //! A priority queue implemented with a splay tree.
+use iter;
 use std;
 use std::cmp;
 use tree_core;
-use iter;
 
 /// `SplayHeap` iterator.
 pub struct Iter<'a, T: 'a> {

@@ -1,5 +1,5 @@
-use std::slice;
 use std::borrow::Borrow;
+use std::slice;
 use tree_core;
 
 #[derive(Debug, Clone)]

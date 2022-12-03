@@ -1,11 +1,11 @@
 //! A set based on splay tree.
+use iter;
 use std;
-use std::ops;
+use std::borrow::Borrow;
 use std::cmp;
 use std::iter::Peekable;
-use std::borrow::Borrow;
+use std::ops;
 use tree_core;
-use iter;
 use vec_like;
 
 /// A set based on splay tree.

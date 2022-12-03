@@ -3,8 +3,8 @@ extern crate rand;
 extern crate serde_json;
 extern crate splay_tree;
 
-use std::hash;
 use std::collections::hash_map::DefaultHasher;
+use std::hash;
 
 fn hash<T: hash::Hash>(x: &T) -> u64 {
     use std::hash::Hasher;
@@ -14,10 +14,10 @@ fn hash<T: hash::Hash>(x: &T) -> u64 {
 }
 
 mod map {
-    use splay_tree::SplayMap;
     use super::hash;
     #[cfg(feature = "serde")]
     use serde_json::{from_str, to_string};
+    use splay_tree::SplayMap;
 
     #[test]
     fn new() {
@@ -186,10 +186,10 @@ mod map {
 }
 
 mod set {
-    use splay_tree::SplaySet;
     use super::hash;
     #[cfg(feature = "serde")]
     use serde_json::{from_str, to_string};
+    use splay_tree::SplaySet;
 
     #[test]
     fn new() {
@@ -406,9 +406,9 @@ mod set {
 }
 
 mod heap {
-    use splay_tree::SplayHeap;
     #[cfg(feature = "serde")]
     use serde_json::{from_str, to_string};
+    use splay_tree::SplayHeap;
 
     #[test]
     fn new() {

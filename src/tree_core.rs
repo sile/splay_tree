@@ -1,13 +1,13 @@
 //! In-place top-down splay tree implementation
-use std::u32;
-use std::mem;
-use std::cmp;
-use std::hash;
-use std::slice;
-use std::borrow::Borrow;
-use std::cmp::Ordering;
-use std::vec::Vec;
 use iter;
+use std::borrow::Borrow;
+use std::cmp;
+use std::cmp::Ordering;
+use std::hash;
+use std::mem;
+use std::slice;
+use std::u32;
+use std::vec::Vec;
 
 pub type NodeIndex = u32;
 const NULL_NODE: NodeIndex = u32::MAX;

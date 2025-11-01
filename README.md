@@ -3,9 +3,8 @@ splay_tree
 
 [![](https://img.shields.io/crates/v/splay_tree.svg)](https://crates.io/crates/splay_tree)
 [![Documentation](https://docs.rs/splay_tree/badge.svg)](https://docs.rs/splay_tree)
-[![Build Status](https://travis-ci.org/sile/splay_tree.svg?branch=master)](https://travis-ci.org/sile/splay_tree)
-[![Code Coverage](https://codecov.io/gh/sile/splay_tree/branch/master/graph/badge.svg)](https://codecov.io/gh/sile/splay_tree/branch/master)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Actions Status](https://github.com/sile/splay_tree/workflows/CI/badge.svg)](https://github.com/sile/splay_tree/actions)
+![License](https://img.shields.io/crates/l/splay_tree)
 
 `splay_tree` provides data structures such as map, set and heap which are based on an in-place top-down splay tree.
 

@@ -139,7 +139,7 @@ where
         Q: ?Sized + Ord,
     {
         let mut index = self.root();
-        while let Some(node) = index.map(|i| self.node_ref(i)) {
+        while let Some(node) = index.map(|i| unsafe { self.node_ref(i) }) {
             match key.cmp(node.key.borrow()) {
                 Ordering::Equal => return Some((&node.key, &node.val)),
                 Ordering::Less => index = node.lft(),
@@ -154,7 +154,7 @@ where
     {
         let mut index = self.root();
         let mut candidate = None;
-        while let Some(node) = index.map(|i| self.node_ref(i)) {
+        while let Some(node) = index.map(|i| unsafe { self.node_ref(i) }) {
             match cmp(&node.key) {
                 Ordering::Equal => return Some(&node.key),
                 Ordering::Less => {
@@ -223,12 +223,14 @@ where
         })
     }
     pub fn get_lftmost_immut(&self) -> Option<(&K, &V)> {
-        self.root().map(|i| self.node_ref(i)).map(|mut node| {
-            while let Some(next) = node.lft().map(|i| self.node_ref(i)) {
-                node = next;
-            }
-            (&node.key, &node.val)
-        })
+        self.root()
+            .map(|i| unsafe { self.node_ref(i) })
+            .map(|mut node| {
+                while let Some(next) = node.lft().map(|i| unsafe { self.node_ref(i) }) {
+                    node = next;
+                }
+                (&node.key, &node.val)
+            })
     }
     pub fn take_lftmost(&mut self) -> Option<(K, V)> {
         self.root().map(|root| {
@@ -243,12 +245,14 @@ where
         })
     }
     pub fn get_rgtmost_immut(&self) -> Option<(&K, &V)> {
-        self.root().map(|i| self.node_ref(i)).map(|mut node| {
-            while let Some(next) = node.rgt().map(|i| self.node_ref(i)) {
-                node = next;
-            }
-            (&node.key, &node.val)
-        })
+        self.root()
+            .map(|i| unsafe { self.node_ref(i) })
+            .map(|mut node| {
+                while let Some(next) = node.rgt().map(|i| unsafe { self.node_ref(i) }) {
+                    node = next;
+                }
+                (&node.key, &node.val)
+            })
     }
     pub fn take_rgtmost(&mut self) -> Option<(K, V)> {
         self.root().map(|root| {
@@ -355,23 +359,23 @@ where
                 rgt,
                 ..
             } => rgt,
-            Node { lft, rgt, .. } if self.node_ref(rgt).lft == NULL_NODE => {
-                self.node_mut(rgt).lft = lft;
+            Node { lft, rgt, .. } if unsafe { self.node_ref(rgt).lft } == NULL_NODE => {
+                unsafe { self.node_mut(rgt).lft = lft };
                 rgt
             }
             Node { lft, mut rgt, .. } => {
-                let lft_rgt = mem::replace(&mut self.node_mut(lft).rgt, NULL_NODE);
+                let lft_rgt = mem::replace(&mut unsafe { self.node_mut(lft).rgt }, NULL_NODE);
                 if lft_rgt != NULL_NODE {
                     rgt = self.splay_lftmost(rgt);
-                    self.node_mut(rgt).lft = lft_rgt;
+                    unsafe { self.node_mut(rgt).lft = lft_rgt };
                 }
-                self.node_mut(lft).rgt = rgt;
+                unsafe { self.node_mut(lft).rgt = rgt };
                 lft
             }
         };
         if self.len() as NodeIndex - 1 != self.root {
-            let key = &self.node_ref(self.len() as NodeIndex - 1).key as *const _;
-            let _ = self.splay(new_root, unsafe { &*key });
+            let key = unsafe { &*(&self.node_ref(self.len() as NodeIndex - 1).key as *const _) };
+            let _ = self.splay(new_root, key);
             let last = self.nodes.pop().unwrap();
             mem::replace(self.root_mut(), last).into()
         } else {
@@ -391,7 +395,7 @@ where
                 if root_rgt != NULL_NODE {
                     root_rgt = self.splay_lftmost(root_rgt);
                     self.root_mut().rgt = root_rgt;
-                    Some(&self.node_ref(root_rgt).key)
+                    Some(&unsafe { self.node_ref(root_rgt) }.key)
                 } else {
                     None
                 }
@@ -411,16 +415,16 @@ impl<K, V> Tree<K, V> {
     }
     pub fn root_ref(&self) -> &Node<K, V> {
         let root = self.root;
-        self.node_ref(root)
+        unsafe { self.node_ref(root) }
     }
     pub fn root_mut(&mut self) -> &mut Node<K, V> {
         let root = self.root;
-        self.node_mut(root)
+        unsafe { self.node_mut(root) }
     }
-    pub fn node_ref(&self, i: NodeIndex) -> &Node<K, V> {
+    pub unsafe fn node_ref(&self, i: NodeIndex) -> &Node<K, V> {
         unsafe { self.nodes.get_unchecked(i as usize) }
     }
-    pub fn node_mut(&mut self, i: NodeIndex) -> &mut Node<K, V> {
+    pub unsafe fn node_mut(&mut self, i: NodeIndex) -> &mut Node<K, V> {
         unsafe { self.nodes.get_unchecked_mut(i as usize) }
     }
     unsafe fn aliasable_node_mut<'a>(&mut self, i: NodeIndex) -> &'a mut Node<K, V> {

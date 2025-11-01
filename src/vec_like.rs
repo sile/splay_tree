@@ -51,10 +51,10 @@ where
     pub fn pop(&mut self) -> Option<(K, V)> {
         self.tree.pop_last()
     }
-    pub fn find_index<Q: ?Sized>(&mut self, key: &Q) -> Option<usize>
+    pub fn find_index<Q>(&mut self, key: &Q) -> Option<usize>
     where
         K: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         if self.tree.contains_key(key) {
             self.tree.root().map(|i| i as usize)
@@ -101,11 +101,11 @@ impl<'a, K: 'a, V: 'a> VecLikeMut<'a, K, V> {
         let last = self.tree.len().wrapping_sub(1);
         self.get_mut(last)
     }
-    pub fn iter(&self) -> Iter<K, V> {
+    pub fn iter(&self) -> Iter<'_, K, V> {
         Iter(self.tree.nodes_iter())
     }
     #[allow(dead_code)]
-    pub fn iter_mut(&mut self) -> IterMut<K, V> {
+    pub fn iter_mut(&mut self) -> IterMut<'_, K, V> {
         IterMut(self.tree.nodes_iter_mut())
     }
 }

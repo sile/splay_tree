@@ -6,7 +6,6 @@ use std::cmp::Ordering;
 use std::hash;
 use std::mem;
 use std::slice;
-use std::u32;
 use std::vec::Vec;
 
 pub type NodeIndex = u32;
@@ -71,62 +70,62 @@ where
             nodes: Vec::new(),
         }
     }
-    pub fn contains_key<Q: ?Sized>(&mut self, key: &Q) -> bool
+    pub fn contains_key<Q>(&mut self, key: &Q) -> bool
     where
         K: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
-        self.root().map_or(false, |root| {
+        self.root().is_some_and(|root| {
             let (root, order) = self.splay(root, key);
             self.root = root;
             order == Ordering::Equal
         })
     }
-    pub fn contains_key_immut<Q: ?Sized>(&self, key: &Q) -> bool
+    pub fn contains_key_immut<Q>(&self, key: &Q) -> bool
     where
         K: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.get_immut(key).is_some()
     }
-    pub fn find_lower_bound<Q: ?Sized>(&mut self, key: &Q) -> Option<&K>
+    pub fn find_lower_bound<Q>(&mut self, key: &Q) -> Option<&K>
     where
         K: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.find_bound(|k| key.cmp(k.borrow()))
     }
-    pub fn find_lower_bound_immut<Q: ?Sized>(&self, key: &Q) -> Option<&K>
+    pub fn find_lower_bound_immut<Q>(&self, key: &Q) -> Option<&K>
     where
         K: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.find_bound_immut(|k| key.cmp(k.borrow()))
     }
-    pub fn find_upper_bound<Q: ?Sized>(&mut self, key: &Q) -> Option<&K>
+    pub fn find_upper_bound<Q>(&mut self, key: &Q) -> Option<&K>
     where
         K: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.find_bound(|k| match key.cmp(k.borrow()) {
             Ordering::Equal => Ordering::Greater,
             other => other,
         })
     }
-    pub fn find_upper_bound_immut<Q: ?Sized>(&self, key: &Q) -> Option<&K>
+    pub fn find_upper_bound_immut<Q>(&self, key: &Q) -> Option<&K>
     where
         K: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.find_bound_immut(|k| match key.cmp(k.borrow()) {
             Ordering::Equal => Ordering::Greater,
             other => other,
         })
     }
-    pub fn get<Q: ?Sized>(&mut self, key: &Q) -> Option<&mut V>
+    pub fn get<Q>(&mut self, key: &Q) -> Option<&mut V>
     where
         K: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         if self.contains_key(key) {
             Some(&mut self.root_mut().val)
@@ -134,10 +133,10 @@ where
             None
         }
     }
-    pub fn get_immut<Q: ?Sized>(&self, key: &Q) -> Option<(&K, &V)>
+    pub fn get_immut<Q>(&self, key: &Q) -> Option<(&K, &V)>
     where
         K: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         let mut index = self.root();
         while let Some(node) = index.map(|i| self.node_ref(i)) {
@@ -194,10 +193,10 @@ where
             None
         }
     }
-    pub fn remove<Q: ?Sized>(&mut self, key: &Q) -> Option<V>
+    pub fn remove<Q>(&mut self, key: &Q) -> Option<V>
     where
         K: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         if self.contains_key(key) {
             Some(self.non_empty_pop_root().1)
@@ -262,10 +261,10 @@ where
         self.root = self.nodes.len() as NodeIndex - 1;
         assert!(self.root != NULL_NODE);
     }
-    fn splay<Q: ?Sized>(&mut self, root: NodeIndex, key: &Q) -> (NodeIndex, Ordering)
+    fn splay<Q>(&mut self, root: NodeIndex, key: &Q) -> (NodeIndex, Ordering)
     where
         K: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.splay_by(root, |k| key.cmp(k.borrow()))
     }
@@ -434,10 +433,10 @@ impl<K, V> Tree<K, V> {
     pub fn capacity(&self) -> usize {
         self.nodes.capacity()
     }
-    pub fn iter(&self) -> iter::Iter<K, V> {
+    pub fn iter(&self) -> iter::Iter<'_, K, V> {
         iter::InOrderIter::new(self.root(), &self.nodes)
     }
-    pub fn iter_mut(&mut self) -> iter::IterMut<K, V> {
+    pub fn iter_mut(&mut self) -> iter::IterMut<'_, K, V> {
         iter::InOrderIter::new(self.root(), &mut self.nodes)
     }
     pub fn into_iter(self) -> iter::IntoIter<K, V> {
@@ -446,10 +445,10 @@ impl<K, V> Tree<K, V> {
             iter::OwnedNodes(self.nodes.into_iter().map(Some).collect()),
         )
     }
-    pub fn nodes_iter(&self) -> slice::Iter<Node<K, V>> {
+    pub fn nodes_iter(&self) -> slice::Iter<'_, Node<K, V>> {
         self.nodes.iter()
     }
-    pub fn nodes_iter_mut(&mut self) -> slice::IterMut<Node<K, V>> {
+    pub fn nodes_iter_mut(&mut self) -> slice::IterMut<'_, Node<K, V>> {
         self.nodes.iter_mut()
     }
 }

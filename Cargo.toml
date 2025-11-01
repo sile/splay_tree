@@ -10,10 +10,6 @@ categories = ["data-structures", "no-std"]
 license = "MIT"
 edition = "2021"
 
-[badges]
-travis-ci = {repository = "sile/splay_tree"}
-codecov = {repository = "sile/splay_tree"}
-
 [dependencies]
 serde = { version = "1", optional = true,  default-features = false, features = ["alloc", "derive"] }
 

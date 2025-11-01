@@ -90,10 +90,10 @@ where
     /// assert!(set.contains("foo"));
     /// assert!(!set.contains("bar"));
     /// ```
-    pub fn contains<Q: ?Sized>(&mut self, value: &Q) -> bool
+    pub fn contains<Q>(&mut self, value: &Q) -> bool
     where
         T: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.tree.contains_key(value)
     }
@@ -111,10 +111,10 @@ where
     /// assert!(set.contains_immut("foo"));
     /// assert!(!set.contains_immut("bar"));
     /// ```
-    pub fn contains_immut<Q: ?Sized>(&self, value: &Q) -> bool
+    pub fn contains_immut<Q>(&self, value: &Q) -> bool
     where
         T: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.tree.contains_key_immut(value)
     }
@@ -136,10 +136,10 @@ where
     /// assert_eq!(set.get("foo"), Some(&"foo"));
     /// assert_eq!(set.get("bar"), None);
     /// ```
-    pub fn get<Q: ?Sized>(&mut self, value: &Q) -> Option<&T>
+    pub fn get<Q>(&mut self, value: &Q) -> Option<&T>
     where
         T: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         if self.tree.get(value).is_some() {
             Some(&self.tree.root_ref().key)
@@ -161,10 +161,10 @@ where
     /// assert_eq!(set.get_immut("foo"), Some(&"foo"));
     /// assert_eq!(set.get_immut("bar"), None);
     /// ```
-    pub fn get_immut<Q: ?Sized>(&self, value: &Q) -> Option<&T>
+    pub fn get_immut<Q>(&self, value: &Q) -> Option<&T>
     where
         T: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.tree.get_immut(value).map(|x| x.0)
     }
@@ -187,10 +187,10 @@ where
     /// assert_eq!(set.find_lower_bound(&1), Some(&1));
     /// assert_eq!(set.find_lower_bound(&4), None);
     /// ```
-    pub fn find_lower_bound<Q: ?Sized>(&mut self, value: &Q) -> Option<&T>
+    pub fn find_lower_bound<Q>(&mut self, value: &Q) -> Option<&T>
     where
         T: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.tree.find_lower_bound(value)
     }
@@ -211,10 +211,10 @@ where
     /// assert_eq!(set.find_lower_bound_immut(&1), Some(&1));
     /// assert_eq!(set.find_lower_bound_immut(&4), None);
     /// ```
-    pub fn find_lower_bound_immut<Q: ?Sized>(&self, value: &Q) -> Option<&T>
+    pub fn find_lower_bound_immut<Q>(&self, value: &Q) -> Option<&T>
     where
         T: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.tree.find_lower_bound_immut(value)
     }
@@ -236,10 +236,10 @@ where
     /// assert_eq!(set.find_upper_bound(&1), Some(&3));
     /// assert_eq!(set.find_upper_bound(&4), None);
     /// ```
-    pub fn find_upper_bound<Q: ?Sized>(&mut self, value: &Q) -> Option<&T>
+    pub fn find_upper_bound<Q>(&mut self, value: &Q) -> Option<&T>
     where
         T: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.tree.find_upper_bound(value)
     }
@@ -260,10 +260,10 @@ where
     /// assert_eq!(set.find_upper_bound_immut(&1), Some(&3));
     /// assert_eq!(set.find_upper_bound_immut(&4), None);
     /// ```
-    pub fn find_upper_bound_immut<Q: ?Sized>(&self, value: &Q) -> Option<&T>
+    pub fn find_upper_bound_immut<Q>(&self, value: &Q) -> Option<&T>
     where
         T: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.tree.find_upper_bound_immut(value)
     }
@@ -424,10 +424,10 @@ where
     /// assert_eq!(set.remove("foo"), true);
     /// assert_eq!(set.remove("foo"), false);
     /// ```
-    pub fn remove<Q: ?Sized>(&mut self, value: &Q) -> bool
+    pub fn remove<Q>(&mut self, value: &Q) -> bool
     where
         T: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.tree.remove(value).is_some()
     }
@@ -446,10 +446,10 @@ where
     /// assert_eq!(set.take("foo"), Some("foo"));
     /// assert_eq!(set.take("foo"), None);
     /// ```
-    pub fn take<Q: ?Sized>(&mut self, value: &Q) -> Option<T>
+    pub fn take<Q>(&mut self, value: &Q) -> Option<T>
     where
         T: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         if self.contains(value) {
             self.tree.pop_root().map(|(e, _)| e)
@@ -608,7 +608,7 @@ where
     /// assert_eq!(set.iter().cloned().collect::<Vec<_>>(),
     ///            ["bar", "baz", "foo"]);
     /// ```
-    pub fn as_vec_like_mut(&mut self) -> VecLikeMut<T> {
+    pub fn as_vec_like_mut(&mut self) -> VecLikeMut<'_, T> {
         VecLikeMut::new(&mut self.tree)
     }
 }
@@ -660,7 +660,7 @@ impl<T> SplaySet<T> {
     ///
     /// assert_eq!(set.iter().collect::<Vec<_>>(), [&"bar", &"baz", &"foo"]);
     /// ```
-    pub fn iter(&self) -> Iter<T> {
+    pub fn iter(&self) -> Iter<'_, T> {
         Iter::new(self)
     }
 
@@ -684,7 +684,7 @@ impl<T> SplaySet<T> {
     /// assert_eq!(set.iter().cloned().collect::<Vec<_>>(),
     ///            ["bar", "foo"]);
     /// ```
-    pub fn as_vec_like(&self) -> VecLike<T> {
+    pub fn as_vec_like(&self) -> VecLike<'_, T> {
         VecLike::new(&self.tree)
     }
 }
@@ -751,7 +751,7 @@ where
         }
     }
 }
-impl<'a, 'b, T> ops::Sub<&'b SplaySet<T>> for &'a SplaySet<T>
+impl<T> ops::Sub<&SplaySet<T>> for &SplaySet<T>
 where
     T: Ord + Clone,
 {
@@ -773,7 +773,7 @@ where
         self.difference(rhs).cloned().collect()
     }
 }
-impl<'a, 'b, T> ops::BitXor<&'b SplaySet<T>> for &'a SplaySet<T>
+impl<T> ops::BitXor<&SplaySet<T>> for &SplaySet<T>
 where
     T: Ord + Clone,
 {
@@ -795,7 +795,7 @@ where
         self.symmetric_difference(rhs).cloned().collect()
     }
 }
-impl<'a, 'b, T> ops::BitAnd<&'b SplaySet<T>> for &'a SplaySet<T>
+impl<T> ops::BitAnd<&SplaySet<T>> for &SplaySet<T>
 where
     T: Ord + Clone,
 {
@@ -817,7 +817,7 @@ where
         self.intersection(rhs).cloned().collect()
     }
 }
-impl<'a, 'b, T> ops::BitOr<&'b SplaySet<T>> for &'a SplaySet<T>
+impl<T> ops::BitOr<&SplaySet<T>> for &SplaySet<T>
 where
     T: Ord + Clone,
 {
@@ -1171,10 +1171,10 @@ where
     /// assert_eq!(vec.find_index("baz"), Some(2));
     /// assert_eq!(vec.find_index("qux"), None);
     /// ```
-    pub fn find_index<Q: ?Sized>(&mut self, value: &Q) -> Option<usize>
+    pub fn find_index<Q>(&mut self, value: &Q) -> Option<usize>
     where
         T: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.inner.find_index(value)
     }
@@ -1260,7 +1260,7 @@ impl<'a, T: 'a> VecLikeMut<'a, T> {
     /// let vec = set.as_vec_like_mut();
     /// assert_eq!(vec.iter().cloned().collect::<Vec<_>>(), ["foo", "bar", "baz"]);
     /// ```
-    pub fn iter(&self) -> VecLikeIter<T> {
+    pub fn iter(&self) -> VecLikeIter<'_, T> {
         VecLikeIter(self.inner.iter())
     }
 

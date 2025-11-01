@@ -108,10 +108,10 @@ where
     /// assert!(map.contains_key("foo"));
     /// assert!(!map.contains_key("bar"));
     /// ```
-    pub fn contains_key<Q: ?Sized>(&mut self, key: &Q) -> bool
+    pub fn contains_key<Q>(&mut self, key: &Q) -> bool
     where
         K: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.tree.contains_key(key)
     }
@@ -129,10 +129,10 @@ where
     /// assert!(map.contains_key_immut("foo"));
     /// assert!(!map.contains_key_immut("bar"));
     /// ```
-    pub fn contains_key_immut<Q: ?Sized>(&self, key: &Q) -> bool
+    pub fn contains_key_immut<Q>(&self, key: &Q) -> bool
     where
         K: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.tree.contains_key_immut(key)
     }
@@ -156,10 +156,10 @@ where
     /// assert_eq!(map.get("foo"), Some(&1));
     /// assert_eq!(map.get("bar"), None);
     /// ```
-    pub fn get<Q: ?Sized>(&mut self, key: &Q) -> Option<&V>
+    pub fn get<Q>(&mut self, key: &Q) -> Option<&V>
     where
         K: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.get_mut(key).map(|v| &*v)
     }
@@ -177,10 +177,10 @@ where
     /// assert_eq!(map.get_immut("foo"), Some(&1));
     /// assert_eq!(map.get_immut("bar"), None);
     /// ```
-    pub fn get_immut<Q: ?Sized>(&self, key: &Q) -> Option<&V>
+    pub fn get_immut<Q>(&self, key: &Q) -> Option<&V>
     where
         K: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.tree.get_immut(key).map(|(_, v)| v)
     }
@@ -199,10 +199,10 @@ where
     /// map.get_mut("foo").map(|v| *v = 2);
     /// assert_eq!(map.get("foo"), Some(&2));
     /// ```
-    pub fn get_mut<Q: ?Sized>(&mut self, key: &Q) -> Option<&mut V>
+    pub fn get_mut<Q>(&mut self, key: &Q) -> Option<&mut V>
     where
         K: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.tree.get(key)
     }
@@ -221,10 +221,10 @@ where
     /// assert_eq!(map.find_lower_bound_key(&1), Some(&1));
     /// assert_eq!(map.find_lower_bound_key(&4), None);
     /// ```
-    pub fn find_lower_bound_key<Q: ?Sized>(&mut self, key: &Q) -> Option<&K>
+    pub fn find_lower_bound_key<Q>(&mut self, key: &Q) -> Option<&K>
     where
         K: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.tree.find_lower_bound(key)
     }
@@ -245,10 +245,10 @@ where
     /// assert_eq!(map.find_lower_bound_key_immut(&1), Some(&1));
     /// assert_eq!(map.find_lower_bound_key_immut(&4), None);
     /// ```
-    pub fn find_lower_bound_key_immut<Q: ?Sized>(&self, key: &Q) -> Option<&K>
+    pub fn find_lower_bound_key_immut<Q>(&self, key: &Q) -> Option<&K>
     where
         K: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.tree.find_lower_bound_immut(key)
     }
@@ -267,10 +267,10 @@ where
     /// assert_eq!(map.find_upper_bound_key(&1), Some(&3));
     /// assert_eq!(map.find_upper_bound_key(&4), None);
     /// ```
-    pub fn find_upper_bound_key<Q: ?Sized>(&mut self, key: &Q) -> Option<&K>
+    pub fn find_upper_bound_key<Q>(&mut self, key: &Q) -> Option<&K>
     where
         K: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.tree.find_upper_bound(key)
     }
@@ -291,10 +291,10 @@ where
     /// assert_eq!(map.find_upper_bound_key_immut(&1), Some(&3));
     /// assert_eq!(map.find_upper_bound_key_immut(&4), None);
     /// ```
-    pub fn find_upper_bound_key_immut<Q: ?Sized>(&self, key: &Q) -> Option<&K>
+    pub fn find_upper_bound_key_immut<Q>(&self, key: &Q) -> Option<&K>
     where
         K: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.tree.find_upper_bound_immut(key)
     }
@@ -441,10 +441,10 @@ where
     /// assert_eq!(map.remove("foo"), Some(1));
     /// assert_eq!(map.remove("foo"), None);
     /// ```
-    pub fn remove<Q: ?Sized>(&mut self, key: &Q) -> Option<V>
+    pub fn remove<Q>(&mut self, key: &Q) -> Option<V>
     where
         K: Borrow<Q>,
-        Q: Ord,
+        Q: ?Sized + Ord,
     {
         self.tree.remove(key)
     }
@@ -464,7 +464,7 @@ where
     ///
     /// assert_eq!(count.get("a"), Some(&3));
     /// ```
-    pub fn entry(&mut self, key: K) -> Entry<K, V> {
+    pub fn entry(&mut self, key: K) -> Entry<'_, K, V> {
         if self.contains_key(&key) {
             Entry::Occupied(OccupiedEntry {
                 tree: &mut self.tree,
@@ -523,7 +523,7 @@ impl<K, V> SplayMap<K, V> {
     /// assert_eq!(vec![(&"bar", &2), (&"baz", &3), (&"foo", &1)],
     ///            map.iter().collect::<Vec<_>>());
     /// ```
-    pub fn iter(&self) -> Iter<K, V> {
+    pub fn iter(&self) -> Iter<'_, K, V> {
         Iter::new(&self.tree)
     }
 
@@ -540,7 +540,7 @@ impl<K, V> SplayMap<K, V> {
     /// }
     /// assert_eq!(map.get("bar"), Some(&12));
     /// ```
-    pub fn iter_mut(&mut self) -> IterMut<K, V> {
+    pub fn iter_mut(&mut self) -> IterMut<'_, K, V> {
         IterMut::new(&mut self.tree)
     }
 
@@ -555,7 +555,7 @@ impl<K, V> SplayMap<K, V> {
     /// assert_eq!(vec!["bar", "baz", "foo"],
     ///            map.keys().cloned().collect::<Vec<_>>());
     /// ```
-    pub fn keys(&self) -> Keys<K, V> {
+    pub fn keys(&self) -> Keys<'_, K, V> {
         Keys::new(&self.tree)
     }
 
@@ -570,7 +570,7 @@ impl<K, V> SplayMap<K, V> {
     /// assert_eq!(vec![2, 3, 1],
     ///            map.values().cloned().collect::<Vec<_>>());
     /// ```
-    pub fn values(&self) -> Values<K, V> {
+    pub fn values(&self) -> Values<'_, K, V> {
         Values::new(&self.tree)
     }
 
@@ -588,7 +588,7 @@ impl<K, V> SplayMap<K, V> {
     /// assert_eq!(vec![12, 13, 11],
     ///            map.values().cloned().collect::<Vec<_>>());
     /// ```
-    pub fn values_mut(&mut self) -> ValuesMut<K, V> {
+    pub fn values_mut(&mut self) -> ValuesMut<'_, K, V> {
         ValuesMut::new(&mut self.tree)
     }
 }

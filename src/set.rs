@@ -751,7 +751,7 @@ where
         }
     }
 }
-impl<'a, 'b, T> ops::Sub<&'b SplaySet<T>> for &'a SplaySet<T>
+impl<T> ops::Sub<&SplaySet<T>> for &SplaySet<T>
 where
     T: Ord + Clone,
 {
@@ -773,7 +773,7 @@ where
         self.difference(rhs).cloned().collect()
     }
 }
-impl<'a, 'b, T> ops::BitXor<&'b SplaySet<T>> for &'a SplaySet<T>
+impl<T> ops::BitXor<&SplaySet<T>> for &SplaySet<T>
 where
     T: Ord + Clone,
 {
@@ -795,7 +795,7 @@ where
         self.symmetric_difference(rhs).cloned().collect()
     }
 }
-impl<'a, 'b, T> ops::BitAnd<&'b SplaySet<T>> for &'a SplaySet<T>
+impl<T> ops::BitAnd<&SplaySet<T>> for &SplaySet<T>
 where
     T: Ord + Clone,
 {
@@ -817,7 +817,7 @@ where
         self.intersection(rhs).cloned().collect()
     }
 }
-impl<'a, 'b, T> ops::BitOr<&'b SplaySet<T>> for &'a SplaySet<T>
+impl<T> ops::BitOr<&SplaySet<T>> for &SplaySet<T>
 where
     T: Ord + Clone,
 {

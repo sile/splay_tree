@@ -76,7 +76,7 @@ where
         K: Borrow<Q>,
         Q: Ord,
     {
-        self.root().map_or(false, |root| {
+        self.root().is_some_and(|root| {
             let (root, order) = self.splay(root, key);
             self.root = root;
             order == Ordering::Equal

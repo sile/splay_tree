@@ -8,13 +8,13 @@ repository = "https://github.com/sile/splay_tree"
 readme = "README.md"
 categories = ["data-structures", "no-std"]
 license = "MIT"
-edition = "2021"
+edition = "2024"
 
 [dependencies]
 serde = { version = "1", optional = true,  default-features = false, features = ["alloc", "derive"] }
 
 [dev-dependencies]
-rand = "0.8"
+rand = "0.9"
 serde_json = { version = "1" }
 
 [features]

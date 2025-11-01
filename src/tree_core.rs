@@ -424,7 +424,7 @@ impl<K, V> Tree<K, V> {
         unsafe { self.nodes.get_unchecked_mut(i as usize) }
     }
     unsafe fn aliasable_node_mut<'a>(&mut self, i: NodeIndex) -> &'a mut Node<K, V> {
-        &mut *(self.node_mut(i) as *mut _)
+        unsafe { &mut *(self.node_mut(i) as *mut _) }
     }
     pub fn len(&self) -> usize {
         self.nodes.len()

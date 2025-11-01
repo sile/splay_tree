@@ -91,7 +91,7 @@ mod map {
 
         // large map
         let mut input = (0..1000).into_iter().collect::<Vec<_>>();
-        input.shuffle(&mut rand::thread_rng());
+        input.shuffle(&mut rand::rng());
 
         let mut map: SplayMap<_, _> = input.into_iter().map(|n| (n, n)).collect();
         assert_eq!(map.find_lower_bound_key(&500), Some(&500));
@@ -155,7 +155,7 @@ mod map {
     #[test]
     fn large_map() {
         let mut input = (0..1000).into_iter().collect::<Vec<_>>();
-        input.shuffle(&mut rand::thread_rng());
+        input.shuffle(&mut rand::rng());
 
         let mut map: SplayMap<_, _> = input.into_iter().map(|n| (n, n)).collect();
         for i in 0..1000 {
@@ -168,7 +168,7 @@ mod map {
     #[test]
     fn map_serde() {
         let mut input = (0..1000).into_iter().collect::<Vec<_>>();
-        input.shuffle(&mut rand::thread_rng());
+        input.shuffle(&mut rand::rng());
 
         let map: SplayMap<_, _> = input.into_iter().map(|n| (n, n)).collect();
         let ser_map: SplayMap<_, _> = from_str(&to_string(&map).unwrap()).unwrap();
@@ -253,7 +253,7 @@ mod set {
 
         // large set
         let mut input = (0..1000).into_iter().collect::<Vec<_>>();
-        input.shuffle(&mut rand::thread_rng());
+        input.shuffle(&mut rand::rng());
 
         let mut set: SplaySet<_> = input.into_iter().collect();
         assert_eq!(set.find_lower_bound(&500), Some(&500));
@@ -306,7 +306,7 @@ mod set {
     #[test]
     fn large_set() {
         let mut input = (0..1000).collect::<Vec<_>>();
-        input.shuffle(&mut rand::thread_rng());
+        input.shuffle(&mut rand::rng());
 
         let mut set: SplaySet<_> = input.iter().cloned().collect();
         for i in input {
@@ -383,7 +383,7 @@ mod set {
     #[test]
     fn set_serde() {
         let mut input = (0..1000).into_iter().collect::<Vec<_>>();
-        input.shuffle(&mut rand::thread_rng());
+        input.shuffle(&mut rand::rng());
 
         let set: SplaySet<_> = input.into_iter().collect();
         let ser_set: SplaySet<_> = from_str(&to_string(&set).unwrap()).unwrap();
@@ -461,7 +461,7 @@ mod heap {
     #[test]
     fn large_heap() {
         let mut input = (0..1000).into_iter().collect::<Vec<_>>();
-        input.shuffle(&mut rand::thread_rng());
+        input.shuffle(&mut rand::rng());
 
         let mut heap = input.into_iter().collect::<SplayHeap<_>>();
         while let Some(n) = heap.pop() {
@@ -475,7 +475,7 @@ mod heap {
         use std::iter::FromIterator;
 
         let mut input = (0..1000).into_iter().collect::<Vec<_>>();
-        input.shuffle(&mut rand::thread_rng());
+        input.shuffle(&mut rand::rng());
 
         let heap: SplayHeap<_> = input.into_iter().collect();
         let ser_heap: SplayHeap<u64> = from_str(&to_string(&heap).unwrap()).unwrap();

@@ -215,7 +215,7 @@ impl<T> SplayHeap<T> {
     ///   println!("{}", x);
     /// }
     /// ```
-    pub fn iter(&self) -> Iter<T> {
+    pub fn iter(&self) -> Iter<'_, T> {
         Iter::new(&self.tree)
     }
 

@@ -15,7 +15,7 @@ impl<'a, K: 'a, V: 'a> VecLike<'a, K, V> {
     }
     pub fn get(&self, index: usize) -> Option<(&'a K, &'a V)> {
         if index < self.tree.len() {
-            Some(self.tree.node_ref(index as tree_core::NodeIndex).into())
+            Some(unsafe { self.tree.node_ref(index as tree_core::NodeIndex).into() })
         } else {
             None
         }
@@ -72,7 +72,7 @@ impl<'a, K: 'a, V: 'a> VecLikeMut<'a, K, V> {
     }
     pub fn get(&self, index: usize) -> Option<(&K, &V)> {
         if index < self.tree.len() {
-            Some(self.tree.node_ref(index as tree_core::NodeIndex).into())
+            Some(unsafe { self.tree.node_ref(index as tree_core::NodeIndex).into() })
         } else {
             None
         }
@@ -80,7 +80,7 @@ impl<'a, K: 'a, V: 'a> VecLikeMut<'a, K, V> {
     #[allow(dead_code)]
     pub fn get_mut(&mut self, index: usize) -> Option<(&K, &mut V)> {
         if index < self.tree.len() {
-            Some(self.tree.node_mut(index as tree_core::NodeIndex).into())
+            Some(unsafe { self.tree.node_mut(index as tree_core::NodeIndex).into() })
         } else {
             None
         }

@@ -122,6 +122,40 @@ where
             other => other,
         })
     }
+    pub fn find_lower_bound_inv<Q>(&mut self, key: &Q) -> Option<&K>
+    where
+        K: Borrow<Q>,
+        Q: ?Sized + Ord,
+    {
+        self.find_bound_inv(|k| key.cmp(k.borrow()))
+    }
+    pub fn find_lower_bound_inv_immut<Q>(&self, key: &Q) -> Option<&K>
+    where
+        K: Borrow<Q>,
+        Q: ?Sized + Ord,
+    {
+        self.find_bound_inv_immut(|k| key.cmp(k.borrow()))
+    }
+    pub fn find_upper_bound_inv<Q>(&mut self, key: &Q) -> Option<&K>
+    where
+        K: Borrow<Q>,
+        Q: ?Sized + Ord,
+    {
+        self.find_bound_inv(|k| match key.cmp(k.borrow()) {
+            Ordering::Equal => Ordering::Less,
+            other => other,
+        })
+    }
+    pub fn find_upper_bound_inv_immut<Q>(&self, key: &Q) -> Option<&K>
+    where
+        K: Borrow<Q>,
+        Q: ?Sized + Ord,
+    {
+        self.find_bound_inv_immut(|k| match key.cmp(k.borrow()) {
+            Ordering::Equal => Ordering::Less,
+            other => other,
+        })
+    }
     pub fn get<Q>(&mut self, key: &Q) -> Option<&mut V>
     where
         K: Borrow<Q>,
@@ -152,16 +186,43 @@ where
     where
         F: Fn(&K) -> Ordering,
     {
+        self.find_bound_ord_immut::<F, true>(cmp)
+    }
+    pub fn find_bound_inv_immut<F>(&self, cmp: F) -> Option<&K>
+    where
+        F: Fn(&K) -> Ordering,
+    {
+        self.find_bound_ord_immut::<F, false>(cmp)
+    }
+    fn find_bound_ord_immut<F, const GT: bool>(&self, cmp: F) -> Option<&K>
+    where
+        F: Fn(&K) -> Ordering,
+    {
         let mut index = self.root();
         let mut candidate = None;
         while let Some(node) = index.map(|i| unsafe { self.node_ref(i) }) {
+            let mut less = || {
+                candidate = Some(&node.key);
+                index = if GT { node.lft() } else { node.rgt() };
+            };
+            let greater =
+                |index: &mut Option<u32>| *index = if GT { node.rgt() } else { node.lft() };
             match cmp(&node.key) {
                 Ordering::Equal => return Some(&node.key),
                 Ordering::Less => {
-                    candidate = Some(&node.key);
-                    index = node.lft();
+                    if GT {
+                        less()
+                    } else {
+                        greater(&mut index)
+                    }
                 }
-                Ordering::Greater => index = node.rgt(),
+                Ordering::Greater => {
+                    if GT {
+                        greater(&mut index)
+                    } else {
+                        less()
+                    }
+                }
             }
         }
         candidate
@@ -387,15 +448,40 @@ where
     where
         F: Fn(&K) -> Ordering,
     {
+        self.find_bound_ord::<F, true>(cmp)
+    }
+    fn find_bound_inv<F>(&mut self, cmp: F) -> Option<&K>
+    where
+        F: Fn(&K) -> Ordering,
+    {
+        self.find_bound_ord::<F, false>(cmp)
+    }
+    fn find_bound_ord<F, const GT: bool>(&mut self, cmp: F) -> Option<&K>
+    where
+        F: Fn(&K) -> Ordering,
+    {
         self.root().and_then(move |root| {
             let (root, order) = self.splay_by(root, cmp);
             self.root = root;
-            if let Ordering::Greater = order {
-                let mut root_rgt = self.root_ref().rgt;
-                if root_rgt != NULL_NODE {
-                    root_rgt = self.splay_lftmost(root_rgt);
-                    self.root_mut().rgt = root_rgt;
-                    Some(&unsafe { self.node_ref(root_rgt) }.key)
+            let ord = if GT {
+                Ordering::Greater
+            } else {
+                Ordering::Less
+            };
+            if ord == order {
+                let mut root_nxt = if GT {
+                    self.root_ref().rgt
+                } else {
+                    self.root_ref().lft
+                };
+                if root_nxt != NULL_NODE {
+                    root_nxt = if GT {
+                        self.splay_lftmost(root_nxt)
+                    } else {
+                        self.splay_rgtmost(root_nxt)
+                    };
+                    self.root_mut().rgt = root_nxt;
+                    Some(&unsafe { self.node_ref(root_nxt) }.key)
                 } else {
                     None
                 }

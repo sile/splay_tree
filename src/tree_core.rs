@@ -480,7 +480,11 @@ where
                     } else {
                         self.splay_rgtmost(root_nxt)
                     };
-                    self.root_mut().rgt = root_nxt;
+                    if GT {
+                        self.root_mut().rgt = root_nxt;
+                    } else {
+                        self.root_mut().lft = root_nxt;
+                    }
                     Some(&unsafe { self.node_ref(root_nxt) }.key)
                 } else {
                     None

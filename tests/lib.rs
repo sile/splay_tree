@@ -101,6 +101,40 @@ mod map {
     }
 
     #[test]
+    fn find_lower_or_upper_bound_key_inv() {
+        // small map
+        let mut map: SplayMap<_, _> = vec![("foo", 1), ("bar", 2), ("baz", 3)]
+            .into_iter()
+            .collect();
+        assert_eq!(map.find_lower_bound_key_inv("aaa"), None);
+        assert_eq!(map.find_upper_bound_key_inv("aaa"), None);
+        assert_eq!(map.find_lower_bound_key_inv("baz"), Some(&"baz"));
+        assert_eq!(map.find_upper_bound_key_inv("baz"), Some(&"bar"));
+        assert_eq!(map.find_lower_bound_key_inv("zzz"), Some(&"foo"));
+        assert_eq!(map.find_upper_bound_key_inv("zzz"), Some(&"foo"));
+
+        // large map: probe many keys, then verify the tree is still intact
+        let mut input = (0..1000).into_iter().collect::<Vec<_>>();
+        input.shuffle(&mut rand::rng());
+
+        let mut map: SplayMap<_, _> = input.into_iter().map(|n| (n, n)).collect();
+        assert_eq!(map.find_lower_bound_key_inv(&500), Some(&500));
+        assert_eq!(map.find_upper_bound_key_inv(&500), Some(&499));
+        assert_eq!(map.find_lower_bound_key_inv(&0), Some(&0));
+        assert_eq!(map.find_upper_bound_key_inv(&0), None);
+        assert_eq!(map.find_lower_bound_key_inv(&-1), None);
+        assert_eq!(map.find_lower_bound_key_inv(&1500), Some(&999));
+
+        // tree integrity: in-order iteration yields a sorted, deduplicated, complete sequence
+        let collected: Vec<_> = map.keys().copied().collect();
+        assert_eq!(collected, (0..1000).collect::<Vec<_>>());
+        assert_eq!(map.len(), 1000);
+        for n in 0..1000 {
+            assert!(map.contains_key(&n));
+        }
+    }
+
+    #[test]
     fn remove() {
         let mut map = SplayMap::new();
         map.insert("foo", 1);
@@ -260,6 +294,38 @@ mod set {
         assert_eq!(set.find_upper_bound(&500), Some(&501));
         assert_eq!(set.find_lower_bound(&999), Some(&999));
         assert_eq!(set.find_upper_bound(&999), None);
+    }
+
+    #[test]
+    fn find_lower_or_upper_bound_inv() {
+        // small set
+        let mut set: SplaySet<_> = vec!["foo", "bar", "baz"].into_iter().collect();
+        assert_eq!(set.find_lower_bound_inv("aaa"), None);
+        assert_eq!(set.find_upper_bound_inv("aaa"), None);
+        assert_eq!(set.find_lower_bound_inv("baz"), Some(&"baz"));
+        assert_eq!(set.find_upper_bound_inv("baz"), Some(&"bar"));
+        assert_eq!(set.find_lower_bound_inv("zzz"), Some(&"foo"));
+        assert_eq!(set.find_upper_bound_inv("zzz"), Some(&"foo"));
+
+        // large set: probe many keys, then verify the tree is still intact
+        let mut input = (0..1000).into_iter().collect::<Vec<_>>();
+        input.shuffle(&mut rand::rng());
+
+        let mut set: SplaySet<_> = input.into_iter().collect();
+        assert_eq!(set.find_lower_bound_inv(&500), Some(&500));
+        assert_eq!(set.find_upper_bound_inv(&500), Some(&499));
+        assert_eq!(set.find_lower_bound_inv(&0), Some(&0));
+        assert_eq!(set.find_upper_bound_inv(&0), None);
+        assert_eq!(set.find_lower_bound_inv(&-1), None);
+        assert_eq!(set.find_lower_bound_inv(&1500), Some(&999));
+
+        // tree integrity: in-order iteration yields a sorted, deduplicated, complete sequence
+        let collected: Vec<_> = set.iter().copied().collect();
+        assert_eq!(collected, (0..1000).collect::<Vec<_>>());
+        assert_eq!(set.len(), 1000);
+        for n in 0..1000 {
+            assert!(set.contains(&n));
+        }
     }
 
     #[test]

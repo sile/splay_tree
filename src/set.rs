@@ -282,19 +282,19 @@ where
     /// set.insert(1);
     /// set.insert(3);
     ///
-    /// assert_eq!(set.find_lower_bound_inv(&4), Some(&3));
-    /// assert_eq!(set.find_lower_bound_inv(&3), Some(&3));
-    /// assert_eq!(set.find_lower_bound_inv(&0), None);
+    /// assert_eq!(set.find_lower_bound_rev(&4), Some(&3));
+    /// assert_eq!(set.find_lower_bound_rev(&3), Some(&3));
+    /// assert_eq!(set.find_lower_bound_rev(&0), None);
     /// ```
-    pub fn find_lower_bound_inv<Q>(&mut self, value: &Q) -> Option<&T>
+    pub fn find_lower_bound_rev<Q>(&mut self, value: &Q) -> Option<&T>
     where
         T: Borrow<Q>,
         Q: ?Sized + Ord,
     {
-        self.tree.find_lower_bound_inv(value)
+        self.tree.find_lower_bound_rev(value)
     }
 
-    /// Immutable version of [`SplaySet::find_lower_bound_inv()`].
+    /// Immutable version of [`SplaySet::find_lower_bound_rev()`].
     ///
     /// Note that this method could be less efficient than the mutable version.
     ///
@@ -306,16 +306,16 @@ where
     /// set.insert(1);
     /// set.insert(3);
     ///
-    /// assert_eq!(set.find_lower_bound_inv_immut(&4), Some(&3));
-    /// assert_eq!(set.find_lower_bound_inv_immut(&3), Some(&3));
-    /// assert_eq!(set.find_lower_bound_inv_immut(&0), None);
+    /// assert_eq!(set.find_lower_bound_rev_immut(&4), Some(&3));
+    /// assert_eq!(set.find_lower_bound_rev_immut(&3), Some(&3));
+    /// assert_eq!(set.find_lower_bound_rev_immut(&0), None);
     /// ```
-    pub fn find_lower_bound_inv_immut<Q>(&self, value: &Q) -> Option<&T>
+    pub fn find_lower_bound_rev_immut<Q>(&self, value: &Q) -> Option<&T>
     where
         T: Borrow<Q>,
         Q: ?Sized + Ord,
     {
-        self.tree.find_lower_bound_inv_immut(value)
+        self.tree.find_lower_bound_rev_immut(value)
     }
 
     /// Finds a maximum element which satisfies "less than `value`" condition in the set.
@@ -331,19 +331,19 @@ where
     /// set.insert(1);
     /// set.insert(3);
     ///
-    /// assert_eq!(set.find_upper_bound_inv(&4), Some(&3));
-    /// assert_eq!(set.find_upper_bound_inv(&3), Some(&1));
-    /// assert_eq!(set.find_upper_bound_inv(&0), None);
+    /// assert_eq!(set.find_upper_bound_rev(&4), Some(&3));
+    /// assert_eq!(set.find_upper_bound_rev(&3), Some(&1));
+    /// assert_eq!(set.find_upper_bound_rev(&0), None);
     /// ```
-    pub fn find_upper_bound_inv<Q>(&mut self, value: &Q) -> Option<&T>
+    pub fn find_upper_bound_rev<Q>(&mut self, value: &Q) -> Option<&T>
     where
         T: Borrow<Q>,
         Q: ?Sized + Ord,
     {
-        self.tree.find_upper_bound_inv(value)
+        self.tree.find_upper_bound_rev(value)
     }
 
-    /// Immutable version of [`SplaySet::find_upper_bound_inv()`].
+    /// Immutable version of [`SplaySet::find_upper_bound_rev()`].
     ///
     /// Note that this method could be less efficient than the mutable version.
     ///
@@ -355,16 +355,16 @@ where
     /// set.insert(1);
     /// set.insert(3);
     ///
-    /// assert_eq!(set.find_upper_bound_inv_immut(&4), Some(&3));
-    /// assert_eq!(set.find_upper_bound_inv_immut(&3), Some(&1));
-    /// assert_eq!(set.find_upper_bound_inv_immut(&0), None);
+    /// assert_eq!(set.find_upper_bound_rev_immut(&4), Some(&3));
+    /// assert_eq!(set.find_upper_bound_rev_immut(&3), Some(&1));
+    /// assert_eq!(set.find_upper_bound_rev_immut(&0), None);
     /// ```
-    pub fn find_upper_bound_inv_immut<Q>(&self, value: &Q) -> Option<&T>
+    pub fn find_upper_bound_rev_immut<Q>(&self, value: &Q) -> Option<&T>
     where
         T: Borrow<Q>,
         Q: ?Sized + Ord,
     {
-        self.tree.find_upper_bound_inv_immut(value)
+        self.tree.find_upper_bound_rev_immut(value)
     }
 
     /// Gets the minimum value in the map.

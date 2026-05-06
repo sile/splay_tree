@@ -122,36 +122,36 @@ where
             other => other,
         })
     }
-    pub fn find_lower_bound_inv<Q>(&mut self, key: &Q) -> Option<&K>
+    pub fn find_lower_bound_rev<Q>(&mut self, key: &Q) -> Option<&K>
     where
         K: Borrow<Q>,
         Q: ?Sized + Ord,
     {
-        self.find_bound_inv(|k| key.cmp(k.borrow()))
+        self.find_bound_rev(|k| key.cmp(k.borrow()))
     }
-    pub fn find_lower_bound_inv_immut<Q>(&self, key: &Q) -> Option<&K>
+    pub fn find_lower_bound_rev_immut<Q>(&self, key: &Q) -> Option<&K>
     where
         K: Borrow<Q>,
         Q: ?Sized + Ord,
     {
-        self.find_bound_inv_immut(|k| key.cmp(k.borrow()))
+        self.find_bound_rev_immut(|k| key.cmp(k.borrow()))
     }
-    pub fn find_upper_bound_inv<Q>(&mut self, key: &Q) -> Option<&K>
+    pub fn find_upper_bound_rev<Q>(&mut self, key: &Q) -> Option<&K>
     where
         K: Borrow<Q>,
         Q: ?Sized + Ord,
     {
-        self.find_bound_inv(|k| match key.cmp(k.borrow()) {
+        self.find_bound_rev(|k| match key.cmp(k.borrow()) {
             Ordering::Equal => Ordering::Less,
             other => other,
         })
     }
-    pub fn find_upper_bound_inv_immut<Q>(&self, key: &Q) -> Option<&K>
+    pub fn find_upper_bound_rev_immut<Q>(&self, key: &Q) -> Option<&K>
     where
         K: Borrow<Q>,
         Q: ?Sized + Ord,
     {
-        self.find_bound_inv_immut(|k| match key.cmp(k.borrow()) {
+        self.find_bound_rev_immut(|k| match key.cmp(k.borrow()) {
             Ordering::Equal => Ordering::Less,
             other => other,
         })
@@ -188,7 +188,7 @@ where
     {
         self.find_bound_ord_immut::<F, true>(cmp)
     }
-    pub fn find_bound_inv_immut<F>(&self, cmp: F) -> Option<&K>
+    pub fn find_bound_rev_immut<F>(&self, cmp: F) -> Option<&K>
     where
         F: Fn(&K) -> Ordering,
     {
@@ -442,7 +442,7 @@ where
     {
         self.find_bound_ord::<F, true>(cmp)
     }
-    fn find_bound_inv<F>(&mut self, cmp: F) -> Option<&K>
+    fn find_bound_rev<F>(&mut self, cmp: F) -> Option<&K>
     where
         F: Fn(&K) -> Ordering,
     {

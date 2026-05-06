@@ -201,27 +201,19 @@ where
         let mut index = self.root();
         let mut candidate = None;
         while let Some(node) = index.map(|i| unsafe { self.node_ref(i) }) {
-            let mut less = || {
-                candidate = Some(&node.key);
-                index = if GT { node.lft() } else { node.rgt() };
-            };
-            let greater =
-                |index: &mut Option<u32>| *index = if GT { node.rgt() } else { node.lft() };
             match cmp(&node.key) {
                 Ordering::Equal => return Some(&node.key),
                 Ordering::Less => {
                     if GT {
-                        less()
-                    } else {
-                        greater(&mut index)
+                        candidate = Some(&node.key);
                     }
+                    index = node.lft();
                 }
                 Ordering::Greater => {
-                    if GT {
-                        greater(&mut index)
-                    } else {
-                        less()
+                    if !GT {
+                        candidate = Some(&node.key);
                     }
+                    index = node.rgt();
                 }
             }
         }

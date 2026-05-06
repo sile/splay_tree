@@ -268,6 +268,105 @@ where
         self.tree.find_upper_bound_immut(value)
     }
 
+    /// Finds a maximum element which
+    /// satisfies "less than or equal to `value`" condition in the set.
+    ///
+    /// The value may be any borrowed form of the set's value type,
+    /// but the ordering on the borrowed form _must_ match the ordering on the value type.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplaySet;
+    ///
+    /// let mut set = SplaySet::new();
+    /// set.insert(1);
+    /// set.insert(3);
+    ///
+    /// assert_eq!(set.find_lower_bound_inv(&4), Some(&3));
+    /// assert_eq!(set.find_lower_bound_inv(&3), Some(&3));
+    /// assert_eq!(set.find_lower_bound_inv(&0), None);
+    /// ```
+    pub fn find_lower_bound_inv<Q>(&mut self, value: &Q) -> Option<&T>
+    where
+        T: Borrow<Q>,
+        Q: ?Sized + Ord,
+    {
+        self.tree.find_lower_bound_inv(value)
+    }
+
+    /// Immutable version of [`SplaySet::find_lower_bound_inv()`].
+    ///
+    /// Note that this method could be less efficient than the mutable version.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplaySet;
+    ///
+    /// let mut set = SplaySet::new();
+    /// set.insert(1);
+    /// set.insert(3);
+    ///
+    /// assert_eq!(set.find_lower_bound_inv_immut(&4), Some(&3));
+    /// assert_eq!(set.find_lower_bound_inv_immut(&3), Some(&3));
+    /// assert_eq!(set.find_lower_bound_inv_immut(&0), None);
+    /// ```
+    pub fn find_lower_bound_inv_immut<Q>(&self, value: &Q) -> Option<&T>
+    where
+        T: Borrow<Q>,
+        Q: ?Sized + Ord,
+    {
+        self.tree.find_lower_bound_inv_immut(value)
+    }
+
+    /// Finds a maximum element which satisfies "less than `value`" condition in the set.
+    ///
+    /// The value may be any borrowed form of the set's value type,
+    /// but the ordering on the borrowed form _must_ match the ordering on the value type.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplaySet;
+    ///
+    /// let mut set = SplaySet::new();
+    /// set.insert(1);
+    /// set.insert(3);
+    ///
+    /// assert_eq!(set.find_upper_bound_inv(&4), Some(&3));
+    /// assert_eq!(set.find_upper_bound_inv(&3), Some(&1));
+    /// assert_eq!(set.find_upper_bound_inv(&0), None);
+    /// ```
+    pub fn find_upper_bound_inv<Q>(&mut self, value: &Q) -> Option<&T>
+    where
+        T: Borrow<Q>,
+        Q: ?Sized + Ord,
+    {
+        self.tree.find_upper_bound_inv(value)
+    }
+
+    /// Immutable version of [`SplaySet::find_upper_bound_inv()`].
+    ///
+    /// Note that this method could be less efficient than the mutable version.
+    ///
+    /// # Examples
+    /// ```
+    /// use splay_tree::SplaySet;
+    ///
+    /// let mut set = SplaySet::new();
+    /// set.insert(1);
+    /// set.insert(3);
+    ///
+    /// assert_eq!(set.find_upper_bound_inv_immut(&4), Some(&3));
+    /// assert_eq!(set.find_upper_bound_inv_immut(&3), Some(&1));
+    /// assert_eq!(set.find_upper_bound_inv_immut(&0), None);
+    /// ```
+    pub fn find_upper_bound_inv_immut<Q>(&self, value: &Q) -> Option<&T>
+    where
+        T: Borrow<Q>,
+        Q: ?Sized + Ord,
+    {
+        self.tree.find_upper_bound_inv_immut(value)
+    }
+
     /// Gets the minimum value in the map.
     ///
     /// # Examples

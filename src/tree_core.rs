@@ -515,7 +515,7 @@ impl<K, V> Tree<K, V> {
     pub fn len(&self) -> usize {
         self.nodes.len()
     }
-    #[allow(dead_code)]
+    #[expect(dead_code)]
     pub fn capacity(&self) -> usize {
         self.nodes.capacity()
     }

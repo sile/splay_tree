@@ -77,7 +77,6 @@ impl<'a, K: 'a, V: 'a> VecLikeMut<'a, K, V> {
             None
         }
     }
-    #[allow(dead_code)]
     pub fn get_mut(&mut self, index: usize) -> Option<(&K, &mut V)> {
         if index < self.tree.len() {
             Some(unsafe { self.tree.node_mut(index as tree_core::NodeIndex).into() })
@@ -88,7 +87,7 @@ impl<'a, K: 'a, V: 'a> VecLikeMut<'a, K, V> {
     pub fn first(&self) -> Option<(&K, &V)> {
         self.get(0)
     }
-    #[allow(dead_code)]
+    #[expect(dead_code)]
     pub fn first_mut(&mut self) -> Option<(&K, &mut V)> {
         self.get_mut(0)
     }
@@ -96,7 +95,7 @@ impl<'a, K: 'a, V: 'a> VecLikeMut<'a, K, V> {
         let last = self.tree.len().wrapping_sub(1);
         self.get(last)
     }
-    #[allow(dead_code)]
+    #[expect(dead_code)]
     pub fn last_mut(&mut self) -> Option<(&K, &mut V)> {
         let last = self.tree.len().wrapping_sub(1);
         self.get_mut(last)
@@ -104,7 +103,7 @@ impl<'a, K: 'a, V: 'a> VecLikeMut<'a, K, V> {
     pub fn iter(&self) -> Iter<'_, K, V> {
         Iter(self.tree.nodes_iter())
     }
-    #[allow(dead_code)]
+    #[expect(dead_code)]
     pub fn iter_mut(&mut self) -> IterMut<'_, K, V> {
         IterMut(self.tree.nodes_iter_mut())
     }

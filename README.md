@@ -19,18 +19,6 @@ See [RustDoc Documentation](https://docs.rs/splay_tree/).
 
 The documentation includes some examples.
 
-
-Installation
-------------
-
-Add following lines to your `Cargo.toml`:
-
-```toml
-[dependencies]
-splay_tree = "0.2"
-```
-
-
 Reference
 ---------
 
